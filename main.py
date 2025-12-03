@@ -5,16 +5,14 @@ import sys
 
 # --- 1. CONFIGURAÇÃO DA CONEXÃO E CAMINHOS ---
 
-# 🔧 Connection string correta para aceder ao SQL Server noutro PC
 conn_str = (
     r'DRIVER={ODBC Driver 17 for SQL Server};'
-    r'SERVER=172.20.10.12\SQLEXPRESS,1433;'   # <-- IP + Instância + Porta
-    r'DATABASE=projeto;'                      # <-- nome da tua BD
-    r'UID=adriana;'                        # <-- user SQL
-    r'PWD=12345;'                    # <-- password
+    r'SERVER=172.20.10.12\SQLEXPRESS,1433;'
+    r'DATABASE=projeto;'
+    r'UID=adriana;'
+    r'PWD=12345;'
 )
 
-# Diretório base do script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 NEO_CSV_PATH = os.path.join(BASE_DIR, 'neo.csv')
 MPCORB_DAT_PATH = os.path.join(BASE_DIR, 'MPCORB.DAT.txt')
@@ -23,34 +21,53 @@ MPCORB_DAT_PATH = os.path.join(BASE_DIR, 'MPCORB.DAT.txt')
 # --- 2. FUNÇÕES DE INSERÇÃO (CHAMADA AOS STORED PROCEDURES) ---
 
 def inserir_asteroide_sp(cursor, data):
-    sp_call = "{CALL SP_InserirAsteroide (?, ?, ?, ?, ?, ?, ?)}"
+    """
+    Chama o SP para inserir o asteroide (usando full_name para unicidade) 
+    e retorna o Asteroid_ID (novo ou existente).
+    """
+    # 6 Parâmetros
+    sp_call = "{CALL SP_InserirAsteroide (?, ?, ?, ?, ?, ?)}"
     try:
         cursor.execute(
             sp_call,
-            data['spkid'], data['full_name'], data['neo'], data['pha'],
+            data['full_name'], data['neo'], data['pha'],
             data['diameter'], data['h'], data['albedo']
         )
-        result = cursor.fetchone()
-        return result and result[0] == 1
-    except pyodbc.IntegrityError:
-        return False
-    except Exception:
-        return False
+        # CORREÇÃO CRÍTICA: LÊ O ID RETORNADO PELO SP (Resulting_Asteroid_ID)
+        result = cursor.fetchone() 
+        
+        if result:
+            return result[0] # Retorna o valor numérico (Asteroid_ID)
+        else:
+            return None
+            
+    except Exception as e:
+        # print(f"Erro ao inserir asteroide: {e}") 
+        return None
 
 
-def inserir_parametro_orbital_sp(cursor, data):
-    sp_call = "{CALL SP_InserirOrbitalParameter (?, ?, ?, ?, ?, ?, ?, ?, ?)}"
+def inserir_parametro_orbital_sp(cursor, asteroid_id, data):
+    """
+    Chama o SP para inserir os parâmetros orbitais, usando o Asteroid_ID como FK.
+    """
+    # 9 Parâmetros (Asteroid_ID + orbit_id + 7 campos de órbita)
+    sp_call = "{CALL SP_InserirOrbitalParameter (?, ?, ?, ?, ?, ?, ?, ?, ?)}" 
     try:
         cursor.execute(
             sp_call,
-            data['spkid'], data['orbit_id'], data['epoch_mjd'],
-            data['e'], data['a'], data['i'],
-            data['ma'], data['moid_ld'], data['rms']
+            asteroid_id,            # 1. @Asteroid_ID (FK)
+            data['orbit_id'],       # 2. @orbital_id (Não é inserido no SQL)
+            data['epoch'],          # 3. @epoch
+            data['e'],              # 4. @e
+            data['a'],              # 5. @a
+            data['i'],              # 6. @i
+            data['M'],              # 7. @M
+            data['moid_ld'],        # 8. @moid_ld
+            data['rms']             # 9. @rms
         )
         return True
-    except pyodbc.IntegrityError:
-        return False
-    except Exception:
+    except Exception as e:
+        # print(f"Erro ao inserir orbital parameter: {e}")
         return False
 
 
@@ -79,8 +96,7 @@ def run_etl():
         try:
             df_neo = pd.read_csv(NEO_CSV_PATH, delimiter=';', encoding='utf-8', low_memory=False)
 
-            df_neo = df_neo.dropna(subset=['spkid'])
-            df_neo['spkid'] = pd.to_numeric(df_neo['spkid'], errors='coerce').astype('Int64')
+            df_neo = df_neo.dropna(subset=['spkid']) 
 
             df_neo['neo'] = df_neo['neo'].map({'Y': 1, 'N': 0}).fillna(0).astype(int)
             df_neo['pha'] = df_neo['pha'].map({'Y': 1, 'N': 0}).fillna(0).astype(int)
@@ -89,30 +105,51 @@ def run_etl():
                 if col in df_neo.columns:
                     df_neo[col] = pd.to_numeric(df_neo[col], errors='coerce').fillna(0)
 
-            # ASTEROIDES ÚNICOS
-            asteroide_cols = ['spkid', 'full_name', 'name', 'pha', 'neo', 'h', 'diameter', 'albedo']
-            df_asteroides_unicos = df_neo[asteroide_cols].drop_duplicates(subset=['spkid'])
+            # --- PREPARAÇÃO ASTEROIDES ÚNICOS ---
+            # O nome do asteroide é usado como chave de negócio
+            asteroide_cols_map = ['full_name', 'neo', 'pha', 'diameter', 'h', 'albedo']
+            df_asteroides_unicos = df_neo[asteroide_cols_map].drop_duplicates(subset=['full_name'])
 
             print(f"Inserindo {len(df_asteroides_unicos)} asteroides únicos...")
+            
+            # Mapa para guardar o Asteroid_ID (PK) para ser usado na tabela Orbital_Parameter
+            asteroid_id_map = {} 
             count_inserted = 0
 
             for _, row in df_asteroides_unicos.iterrows():
-                if inserir_asteroide_sp(cursor, row):
+                asteroid_id = inserir_asteroide_sp(cursor, row)
+                
+                if asteroid_id:
                     count_inserted += 1
+                    # Mapeia o nome do asteroide ao ID gerado/existente
+                    asteroid_id_map[row['full_name']] = asteroid_id
 
             cnxn.commit()
             print(f"Concluído: {count_inserted} novos asteroides inseridos/atualizados.")
+            
+            # --- PARÂMETROS ORBITAIS NEO.CSV ---
+            orbital_cols_neo = ['full_name', 'orbit_id', 'epoch_mjd', 'e', 'a', 'i', 'ma', 'moid_ld', 'rms']
+            df_orbitas = df_neo[orbital_cols_neo].dropna(subset=['orbit_id', 'full_name'])
 
-            # PARÂMETROS ORBITAIS
-            orbital_cols = ['spkid', 'orbit_id', 'epoch_mjd', 'e', 'a', 'i', 'ma', 'moid_ld', 'rms']
-            df_orbitas = df_neo[orbital_cols].dropna(subset=['orbit_id'])
-
+            # Renomeia colunas para corresponder aos nomes dos parâmetros no SP
+            df_orbitas = df_orbitas.rename(columns={'ma': 'M', 'epoch_mjd': 'epoch'}) 
+            
             print(f"Iniciando a inserção de {len(df_orbitas)} parâmetros orbitais (neo.csv)...")
             count_orbits_inserted = 0
 
             for _, row in df_orbitas.iterrows():
-                if inserir_parametro_orbital_sp(cursor, row):
-                    count_orbits_inserted += 1
+                # Obtém o Asteroid_ID (PK) mapeado
+                asteroid_id = asteroid_id_map.get(row['full_name'])
+                
+                if asteroid_id:
+                    data_for_sp = {
+                        'orbit_id': row['orbit_id'],
+                        'epoch': row['epoch'],
+                        'e': row['e'], 'a': row['a'], 'i': row['i'],
+                        'M': row['M'], 'moid_ld': row['moid_ld'], 'rms': row['rms']
+                    }
+                    if inserir_parametro_orbital_sp(cursor, asteroid_id, data_for_sp):
+                        count_orbits_inserted += 1
 
             cnxn.commit()
             print(f"Concluído: {count_orbits_inserted} parâmetros orbitais inseridos.")
@@ -154,41 +191,35 @@ def run_etl():
             mpcorb_numeric = ['h', 'M', 'w', 'om', 'i', 'e', 'n', 'a', 'rms']
             for col in mpcorb_numeric:
                 df_mpcorb[col] = pd.to_numeric(df_mpcorb[col].astype(str).str.strip(), errors='coerce').fillna(0)
-
-            df_mpcorb['spkid'] = pd.to_numeric(df_mpcorb['Desn'], errors='coerce').astype('Int64')
-            df_mpcorb = df_mpcorb.dropna(subset=['spkid'])
-
-            df_mpcorb['orbit_id'] = df_mpcorb['Desn'] + '_' + df_mpcorb['Epoch'].astype(str)
-
+            
+            # Renomear para corresponder aos SPs
+            df_mpcorb = df_mpcorb.rename(columns={'Desn': 'orbit_id', 'Epoch': 'epoch', 'M': 'M'})
+            
             print(f"Iniciando a inserção de {len(df_mpcorb)} órbitas do MPCORB...")
             count_mpcorb_orbits_inserted = 0
 
             for _, row in df_mpcorb.iterrows():
+                # 1. Insere/Atualiza o Asteroide (para garantir que existe na tabela e obter o ID)
                 temp_asteroide = {
-                    'spkid': row['spkid'],
                     'full_name': row['full_name'],
-                    'neo': 0,
-                    'pha': 0,
-                    'diameter': 0.0,
-                    'h': row['h'],
-                    'albedo': 0.0
+                    'neo': 0, 'pha': 0, 'diameter': 0.0,
+                    'h': row['h'], 'albedo': 0.0
                 }
-                inserir_asteroide_sp(cursor, temp_asteroide)
+                asteroid_id = inserir_asteroide_sp(cursor, temp_asteroide)
+                
+                # 2. Insere o Parâmetro Orbital se tiver o ID
+                if asteroid_id:
+                    data_for_sp = {
+                        'orbit_id': row['orbit_id'],
+                        'epoch': row['epoch'],
+                        'e': row['e'], 'a': row['a'], 'i': row['i'],
+                        'M': row['M'], 
+                        'moid_ld': 0.0, # Moid_ld fixo
+                        'rms': row['rms']
+                    }
 
-                data_for_sp = {
-                    'spkid': row['spkid'],
-                    'orbit_id': row['orbit_id'],
-                    'epoch_mjd': row['Epoch'],
-                    'e': row['e'],
-                    'a': row['a'],
-                    'i': row['i'],
-                    'ma': row['M'],
-                    'moid_ld': 0.0,
-                    'rms': row['rms']
-                }
-
-                if inserir_parametro_orbital_sp(cursor, data_for_sp):
-                    count_mpcorb_orbits_inserted += 1
+                    if inserir_parametro_orbital_sp(cursor, asteroid_id, data_for_sp):
+                        count_mpcorb_orbits_inserted += 1
 
             cnxn.commit()
             print(f"Concluído: {count_mpcorb_orbits_inserted} órbitas do MPCORB inseridas.")
