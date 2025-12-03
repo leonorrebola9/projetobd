@@ -8,7 +8,7 @@ import sys
 # Seu caminho de conexão
 conn_str = (
     r'DRIVER={ODBC Driver 17 for SQL Server};'
-    r'SERVER=PC0ADRIANA\SQLEXPRESS;'
+    r'SERVER=LAPTOP-VG0H1U7H\SQLEXPRESS;'
     r'DATABASE=projeto;'
     r'Trusted_Connection=yes;'
 )
