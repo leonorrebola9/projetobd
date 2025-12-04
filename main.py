@@ -22,8 +22,7 @@ MPCORB_DAT_PATH = os.path.join(BASE_DIR, 'MPCORB.DAT.txt')
 
 def inserir_asteroide_sp(cursor, data):
     """
-    Chama o SP para inserir o asteroide (usando full_name para unicidade) 
-    e retorna o Asteroid_ID (novo ou existente).
+    Chama o SP para inserir o asteroide e retorna o Asteroid_ID (novo ou existente).
     """
     # 6 Parâmetros
     sp_call = "{CALL SP_InserirAsteroide (?, ?, ?, ?, ?, ?)}"
@@ -33,7 +32,7 @@ def inserir_asteroide_sp(cursor, data):
             data['full_name'], data['neo'], data['pha'],
             data['diameter'], data['h'], data['albedo']
         )
-        # CORREÇÃO CRÍTICA: LÊ O ID RETORNADO PELO SP (Resulting_Asteroid_ID)
+        # O SP retorna o Asteroid_ID (novo ou existente)
         result = cursor.fetchone() 
         
         if result:
@@ -41,14 +40,14 @@ def inserir_asteroide_sp(cursor, data):
         else:
             return None
             
-    except Exception as e:
-        # print(f"Erro ao inserir asteroide: {e}") 
+    except Exception:
         return None
 
 
 def inserir_parametro_orbital_sp(cursor, asteroid_id, data):
     """
-    Chama o SP para inserir os parâmetros orbitais, usando o Asteroid_ID como FK.
+    Chama o SP para inserir os parâmetros orbitais.
+    Captura pyodbc.IntegrityError (duplicação de órbita) e ignora.
     """
     # 9 Parâmetros (Asteroid_ID + orbit_id + 7 campos de órbita)
     sp_call = "{CALL SP_InserirOrbitalParameter (?, ?, ?, ?, ?, ?, ?, ?, ?)}" 
@@ -66,8 +65,12 @@ def inserir_parametro_orbital_sp(cursor, asteroid_id, data):
             data['rms']             # 9. @rms
         )
         return True
+    except pyodbc.IntegrityError:
+        # Duplicação de órbita (Asteroid_ID + epoch já existem).
+        return False 
     except Exception as e:
-        # print(f"Erro ao inserir orbital parameter: {e}")
+        # Erros de conversão de dados, etc.
+        print(f"ERRO DE INSERÇÃO ORBITAL (MPCORB): ID {asteroid_id} | Erro: {e}") 
         return False
 
 
@@ -88,7 +91,7 @@ def run_etl():
         'sigma_i', 'sigma_w', 'sigma_ma'
     ]
 
-    # --- 3.2 PROCESSAMENTO NEO.CSV ---
+    # --- 3.2 PROCESSAMENTO NEO.CSV (Funcionamento comprovado) ---
     if not os.path.exists(NEO_CSV_PATH):
         print(f"ERRO: Ficheiro neo.csv não encontrado em: {NEO_CSV_PATH}")
     else:
@@ -105,14 +108,12 @@ def run_etl():
                 if col in df_neo.columns:
                     df_neo[col] = pd.to_numeric(df_neo[col], errors='coerce').fillna(0)
 
-            # --- PREPARAÇÃO ASTEROIDES ÚNICOS ---
-            # O nome do asteroide é usado como chave de negócio
+            # --- ASTEROIDES ÚNICOS ---
             asteroide_cols_map = ['full_name', 'neo', 'pha', 'diameter', 'h', 'albedo']
             df_asteroides_unicos = df_neo[asteroide_cols_map].drop_duplicates(subset=['full_name'])
 
             print(f"Inserindo {len(df_asteroides_unicos)} asteroides únicos...")
             
-            # Mapa para guardar o Asteroid_ID (PK) para ser usado na tabela Orbital_Parameter
             asteroid_id_map = {} 
             count_inserted = 0
 
@@ -121,7 +122,6 @@ def run_etl():
                 
                 if asteroid_id:
                     count_inserted += 1
-                    # Mapeia o nome do asteroide ao ID gerado/existente
                     asteroid_id_map[row['full_name']] = asteroid_id
 
             cnxn.commit()
@@ -131,14 +131,12 @@ def run_etl():
             orbital_cols_neo = ['full_name', 'orbit_id', 'epoch_mjd', 'e', 'a', 'i', 'ma', 'moid_ld', 'rms']
             df_orbitas = df_neo[orbital_cols_neo].dropna(subset=['orbit_id', 'full_name'])
 
-            # Renomeia colunas para corresponder aos nomes dos parâmetros no SP
             df_orbitas = df_orbitas.rename(columns={'ma': 'M', 'epoch_mjd': 'epoch'}) 
             
             print(f"Iniciando a inserção de {len(df_orbitas)} parâmetros orbitais (neo.csv)...")
             count_orbits_inserted = 0
 
             for _, row in df_orbitas.iterrows():
-                # Obtém o Asteroid_ID (PK) mapeado
                 asteroid_id = asteroid_id_map.get(row['full_name'])
                 
                 if asteroid_id:
@@ -158,7 +156,7 @@ def run_etl():
             cnxn.rollback()
             print(f"ERRO FATAL no processamento neo.csv: {e}")
 
-    # --- 3.3 PROCESSAMENTO MPCORB.DAT ---
+    # --- 3.3 PROCESSAMENTO MPCORB.DAT (CORRIGIDO) ---
     if not os.path.exists(MPCORB_DAT_PATH):
         print(f"\nERRO: Ficheiro MPCORB.DAT não encontrado em: {MPCORB_DAT_PATH}")
     else:
@@ -188,9 +186,13 @@ def run_etl():
 
             print(f"Ficheiro MPCORB.DAT lido com sucesso: {len(df_mpcorb)} linhas.")
 
-            mpcorb_numeric = ['h', 'M', 'w', 'om', 'i', 'e', 'n', 'a', 'rms']
-            for col in mpcorb_numeric:
-                df_mpcorb[col] = pd.to_numeric(df_mpcorb[col].astype(str).str.strip(), errors='coerce').fillna(0)
+            # LISTA CORRIGIDA: Inclui todas as colunas que são FLOAT no SP/Tabela
+            mpcorb_numeric_to_float = ['h', 'M', 'w', 'om', 'i', 'e', 'n', 'a', 'rms', 'Epoch', 'G']
+            
+            for col in mpcorb_numeric_to_float:
+                if col in df_mpcorb.columns:
+                    # CORREÇÃO: Força a conversão para float e substitui lixo por 0.0
+                    df_mpcorb[col] = pd.to_numeric(df_mpcorb[col].astype(str).str.strip(), errors='coerce').fillna(0).astype(float)
             
             # Renomear para corresponder aos SPs
             df_mpcorb = df_mpcorb.rename(columns={'Desn': 'orbit_id', 'Epoch': 'epoch', 'M': 'M'})
@@ -214,7 +216,7 @@ def run_etl():
                         'epoch': row['epoch'],
                         'e': row['e'], 'a': row['a'], 'i': row['i'],
                         'M': row['M'], 
-                        'moid_ld': 0.0, # Moid_ld fixo
+                        'moid_ld': float(0.0), # Moid_ld fixo como FLOAT
                         'rms': row['rms']
                     }
 
