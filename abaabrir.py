@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
+import subprocess  # ← import necessário
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -8,78 +9,74 @@ app = ctk.CTk()
 app.geometry("1920x1080")
 app.title("Somos bue fixes")
 
-bg_image = ctk.CTkImage(
-    light_image=Image.open("fundo01.jpg"),
-    dark_image=Image.open("fundo01.jpg"),
-    size=(1580, 800)
+# --- CARREGAR E REDIMENSIONAR IMAGEM ---
+screen_width = 1920
+screen_height = 1080
+bg_image = Image.open("fundo01.jpg").resize((screen_width, screen_height))
+bg_photo = ImageTk.PhotoImage(bg_image)
+
+# --- CANVAS ---
+canvas = ctk.CTkCanvas(app, width=screen_width, height=screen_height, highlightthickness=0)
+canvas.place(x=0, y=0)
+canvas.create_image(0, 0, anchor="nw", image=bg_photo)
+
+# --- TEXTO SOBRE A IMAGEM ---
+text_y = screen_height // 2 - 50
+canvas.create_text(screen_width // 2, text_y, text="Bem Vindo", font=("Comic Sans MS", 50, "bold"), fill="white")
+
+# --- FUNÇÃO DO BOTÃO ---
+def abrir_login():
+    # Abre o login.py em um novo processo
+    subprocess.Popen(["python", "login.py"])
+    # Fecha a janela atual se quiser
+    app.destroy()
+
+# --- BOTÃO COM ANIMAÇÃO DE CRESCIMENTO ---
+final_width = 200
+final_height = 50
+final_font_size = 20
+
+entrar_btn = ctk.CTkButton(
+    app,
+    text="Entrar",
+    width=1,
+    height=1,
+    corner_radius=15,
+    fg_color="#1E5EFF",
+    hover_color="#1C4DE8",
+    font=("Comic Sans MS", 1, "bold"),
+    command=abrir_login  # ← ligação para login.py
 )
+entrar_btn.place(x=screen_width//2, y=text_y + 80, anchor="n")
 
-bg_label = ctk.CTkLabel(app, image=bg_image, text="")
-bg_label.place(x=0, y=0)
-# --- LOGIN TITLE ---
-# --- LOGIN TITLE (AGORA TRANSPARENTE) ---
-login = ctk.CTkLabel(
-    app, 
-    text="Bem Vindo", 
-    font=("Comic Sans MS", 50, "bold"),
-    bg_color="transparent",  # Corrigido: usa fg_color
-    text_color="white"       # Adicionado: Garante que o texto se destaca na cor branca
-)
-# Usamos place com coordenadas relativas para posicionar em cima da imagem
-login.place(relx=0.5, rely=0.4, anchor=ctk.CENTER)
+# --- FUNÇÃO DE ANIMAÇÃO ---
+current_width = 1
+current_height = 1
+current_font = 1
+step = 8
 
-"""
-# --- USER ENTRY ---
-entry = ctk.CTkEntry(app, placeholder_text="Usuário", width=250)
-entry.place(x=30, y=120)
+def animate_button():
+    global current_width, current_height, current_font
+    if current_width < final_width:
+        current_width += step
+        current_height += int(step/4)
+        if current_width > final_width:
+            current_width = final_width
+        if current_height > final_height:
+            current_height = final_height
+        current_font += 1
+        if current_font > final_font_size:
+            current_font = final_font_size
 
-# --- PASSWORD ENTRY ---
-passw = ctk.CTkEntry(app, placeholder_text="Password", show="*", width=250)
-passw.place(x=30, y=170)
+        entrar_btn.configure(width=current_width, height=current_height, font=("Comic Sans MS", current_font, "bold"))
+        entrar_btn.place(x=760,y=450, anchor="n")
+        app.after(20, animate_button)
 
-# --- OUTPUT LABEL ---
-output_label = ctk.CTkLabel(app, text="", text_color="purple")
-output_label.place(x=30, y=220)
+# Inicia a animação
+app.after(500, animate_button)
 
-def greet():
-    nome = entry.get()
-    if nome.strip() == "":
-        output_label.configure(text="Por favor escreva um nome!")
-    else:
-        output_label.configure(text=f"Olá {nome}, somos mesmo bué fixes 😎")
-
-# --- ICON IMAGE ---
-icon_image = Image.open("menu.png")
-icon_image = icon_image.resize((30, 30))
-icon_img = ctk.CTkImage(light_image=icon_image, dark_image=icon_image)
-
-# Variável global para o menu
-menu_frame = None
-
-def toggle_menu():
-    global menu_frame
-
-    # Fecha se já estiver aberto
-    if menu_frame is not None:
-        menu_frame.destroy()
-        menu_frame = None
-        return
-
-    # Abre menu
-    menu_frame = ctk.CTkFrame(app, width=150, height=140, corner_radius=10)
-    menu_frame.place(x=250, y=60)
-
-    ctk.CTkButton(menu_frame, text="Sign In",font=("Candara",12, "bold"), width=120).pack(pady=5)
-    ctk.CTkButton(menu_frame, text="Opção 2", width=120).pack(pady=5)
-    ctk.CTkButton(menu_frame, text="Entrar", width=120, command=greet).pack(pady=5)
-
-# --- BUTTON WITH ICON ---
-menu_button = ctk.CTkButton(app, text="", image=icon_img, command=toggle_menu, width=40, height=40)
-menu_button.place(x=330, y=10)
-
-# --- LOGIN BUTTON ---
-greet_btn = ctk.CTkButton(app, text="Entrar", command=greet, width=250)
-greet_btn.place(x=30, y=270)
-
-"""
 app.mainloop()
+
+
+
+
