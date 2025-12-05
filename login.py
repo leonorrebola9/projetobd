@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from PIL import Image
 import subprocess
+from main import conectar_sql
+
+
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -70,13 +73,13 @@ greet_btn = ctk.CTkButton(app, text="Entrar", command=greet, width=250, height=4
 greet_btn.place(x=650, y=270)
 
 # --- DOWN BAR ---
-down_bar = ctk.CTkFrame(app, width=1920, height=200, fg_color="#B4AEAE")
+down_bar = ctk.CTkFrame(app, width=2000, height=250, fg_color="#B4AEAE")
 down_bar.place(x=0, y=650)
 
 # --- MENÇÃO SOBRE O DOWN BAR ---
 mencao = ctk.CTkLabel(
     app,
-    text="Adriana Abreu & Leonor Rebola",
+    text="@Adriana Abreu & Leonor Rebola",
     text_color="black",
     font=("Comic Sans MS", 10),
     fg_color="#B4AEAE"  # transparente

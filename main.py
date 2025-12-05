@@ -5,13 +5,21 @@ import sys
 
 # --- 1. CONFIGURAÇÃO DA CONEXÃO E CAMINHOS ---
 
-conn_str = (
-    r'DRIVER={ODBC Driver 17 for SQL Server};'
-    r'SERVER=172.20.10.12\SQLEXPRESS,1433;'
-    r'DATABASE=projeto;'
-    r'UID=adriana;'
-    r'PWD=12345;'
-)
+def conectar_sql():
+    try:
+        conexao = pyodbc.connect(
+            r'DRIVER={ODBC Driver 17 for SQL Server};'
+            r'SERVER=172.20.10.12\SQLEXPRESS,1433;'
+            r'DATABASE=projeto;'
+            r'UID=adriana;'
+            r'PWD=12345;'
+        )
+        return conexao
+    except Exception as e:
+        print("Erro ao conectar ao SQL Server:", e)
+        return None
+
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 NEO_CSV_PATH = os.path.join(BASE_DIR, 'neo.csv')
