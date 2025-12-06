@@ -12,7 +12,7 @@ app.title("Somos bue fixes")
 # --- CARREGAR E REDIMENSIONAR IMAGEM ---
 screen_width = 1920
 screen_height = 1080
-bg_image = Image.open("fundo01.jpg").resize((screen_width, screen_height))
+bg_image = Image.open(r"C:\Users\adria\Documents\GitHub\projetobd\Imagens_app\fundo01.jpg").resize((screen_width, screen_height))
 bg_photo = ImageTk.PhotoImage(bg_image)
 
 # --- CANVAS ---

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 import subprocess
-from main import conectar_sql
+#from main import conectar_sql
 
 
 
@@ -86,11 +86,6 @@ mencao = ctk.CTkLabel(
 )
 # Coloca dentro do down_bar
 mencao.place(x=10, y=670)
-
-# --- MENU COM ÍCONE (opcional) ---
-icon_image = Image.open("menu.png").resize((30, 30))
-icon_img = ctk.CTkImage(light_image=icon_image, dark_image=icon_image)
-menu_frame = None
 
 def toggle_menu():
     global menu_frame
