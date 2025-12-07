@@ -1,0 +1,12 @@
+Designation;Discovery time (UTC);Impact time (UTC);Warning time (hh:mm);Size range (m);Latitude (deg.);Longitude (deg.);Altitude (km);Orbit viewer;Discovery station;Discovery MPEC;Reference
+2008 TC3;06/10/2008 06:39;07/10/2008 02:45;20:05:00;3.8 - 4.4 m;20.9 N;31.8 E;50.0;View;Mt. Lemmon Survey;2008-T50;Jenniskens et al. (2009)
+2014 AA;01/01/2014 06:18;02/01/2014 03:04;20:46:00;2 - 4 m;13.1 N;44.2 W;40.0;View;Mt. Lemmon Survey;2014-A02;Farnocchia et al. (2016)
+2018 LA;02/06/2018 08:14;02/06/2018 16:44;08:29:00;2 - 5 m;21.3 S;23.3 E;27.8;View;Mt. Lemmon Survey;2018-L04;Jenniskens et al. (2021)
+2019 MO;22/06/2019 09:49;22/06/2019 21:25;11:36:00;4 - 9 m;14.9 N;66.2 W;25.0;View;ATLAS-MLO;2019-M72;USG Fireball report
+2022 EB5;11/03/2022 19:24;11/03/2022 21:22;01:58:00;1.4 - 3.2 m;70.0 N;9.1 W;33.3;View;GINOP-KHK;2022-E178;USG Fireball report
+2022 WJ1;19/11/2022 04:53;19/11/2022 08:26;03:33:00;0.4 - 0.6 m;43.0 N;81.7 W;95.5;View;Mt. Lemmon Survey;2022-W69;Kareta et al. (2024)
+2023 CX1;12/02/2023 20:18;13/02/2023 02:59;06:41:00;0.7 - 0.8 m;49.9 N;0.2 W;101.8;View;GINOP-KHK;2023-C103;Egal. et al. (2025)
+2024 BX1;20/01/2024 21:48;21/01/2024 00:32;02:44:00;< 0.5 m;52.6 N;12.6 E;21.3;View;GINOP-KHK;2024-B76;Spurný et al. (2024)
+2024 RW1;04/09/2024 05:43;04/09/2024 16:39;10:55:00;1 - 2.5 m;18.0 N;122.9 E;25.0;View;Mt. Lemmon Survey;2024-R68;USG Fireball report
+2024 UQ;22/10/2024 09:08;22/10/2024 10:54;01:46:00;0.8 - 1.6 m;30.0 N;136.0 W;38.2;View;ATLAS-HKO, Haleakala;2024-U49;USG Fireball report
+2024 XA1;03/12/2024 05:55;03/12/2024 16:14;10:19:00;0.7 - 1.5 m;60.9 N;119.5 E;50.0;View;Kitt Peak-Bok;2024-X68;JPL solution 4

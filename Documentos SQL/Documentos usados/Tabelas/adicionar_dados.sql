@@ -57,24 +57,3 @@ SELECT
 FROM dbo.neo AS N
 INNER JOIN Asteroid AS A 
     ON CAST(N.full_name AS VARCHAR(100)) = A.full_name;
-
-
--- Valores para a tabela Observation
--- Buscar ID do equipamento genérico
--- 1. Buscar ID do equipamento genérico (obrigatório para a Foreign Key)
-DECLARE @EquipID INT = (SELECT TOP 1 Equipment_ID FROM Equipment);
-
-INSERT INTO Observation (Asteroid_ID, Equipment_ID, Software_ID, arc, num_obs)
-SELECT TOP 958524   -- podes ajustar
-    A.Asteroid_ID,
-    @EquipID,
-    S.Software_ID,
-    TRY_CAST(CAST(M.Arc AS VARCHAR(50)) AS FLOAT),
-    TRY_CAST(CAST(M.Obs AS VARCHAR(50)) AS INT)
-FROM dbo.MPCORB AS M
-INNER JOIN dbo.neo AS N 
-    ON CAST(M.Desn AS VARCHAR(50)) = CAST(N.pdes AS VARCHAR(50))
-INNER JOIN Asteroid AS A 
-    ON CAST(N.full_name AS VARCHAR(100)) = A.full_name
-LEFT JOIN Software AS S 
-    ON CAST(M.Computer AS VARCHAR(100)) = S.Computer;
