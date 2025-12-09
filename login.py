@@ -1,8 +1,14 @@
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageTk
 import subprocess
+import os
+import sys
+import webbrowser
 #from main import conectar_sql
 
+
+# --- CAMINHO BASE ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 ctk.set_appearance_mode("System")
@@ -72,36 +78,100 @@ signin_label.bind("<Button-1>", lambda e: open_signin())
 greet_btn = ctk.CTkButton(app, text="Entrar", command=greet, width=250, height=40)
 greet_btn.place(x=650, y=270)
 
-# --- DOWN BAR ---
+
+
+
+#---------------------------------------------
+# --- FUNÇÕES ABRIR REDES SOCIAIS -------------
+#---------------------------------------------
+
+def open_nasa():
+    webbrowser.open("https://www.nasa.gov/")
+
+def open_insta():
+    webbrowser.open("https://www.instagram.com/nasa/")
+
+def open_twitter():
+    webbrowser.open("https://x.com/NASA")
+
+def open_facebook():
+    webbrowser.open("https://www.facebook.com/NASA/")
+
+def open_linkedin():
+    webbrowser.open("https://www.linkedin.com/company/nasa/?originalSubdomain=pt")
+
+
+
+
+#---------------------------------------------
+# --- DOWN BAR -----------------------------
+#---------------------------------------------
+
+
 down_bar = ctk.CTkFrame(app, width=2000, height=250, fg_color="#B4AEAE")
 down_bar.place(x=0, y=650)
 
-# --- MENÇÃO SOBRE O DOWN BAR ---
 mencao = ctk.CTkLabel(
     app,
     text="@Adriana Abreu & Leonor Rebola",
     text_color="black",
-    font=("Comic Sans MS", 10),
-    fg_color="#B4AEAE"  # transparente
+    font=("Aharoni", 10),
+    fg_color="#B4AEAE"
 )
-# Coloca dentro do down_bar
 mencao.place(x=10, y=670)
 
-def toggle_menu():
-    global menu_frame
-    if menu_frame is not None:
-        menu_frame.destroy()
-        menu_frame = None
-        return
-    menu_frame = ctk.CTkFrame(app, width=150, height=140, corner_radius=10)
-    menu_frame.place(x=250, y=60)
-    ctk.CTkButton(menu_frame, text="Página Principal", width=120).pack(pady=5)
-    ctk.CTkButton(menu_frame, text="Sign In", width=120, command=open_signin).pack(pady=5)
 
+# --- IMAGENS LOGOS ---
 
-# --- BOTÃO DE MENU (opcional) ---
-# menu_button = ctk.CTkButton(app, text="", image=icon_img, command=toggle_menu, width=40, height=40)
-# menu_button.place(x=1450, y=10)
+# Nasa
+img_pathnasa = os.path.join(BASE_DIR, r"Imagens_app\nasa.png")
+nasa = Image.open(img_pathnasa).resize((35, 35))
+photonasa = ImageTk.PhotoImage(nasa)
+nasa_label = ctk.CTkLabel(down_bar, image=photonasa, text="")
+nasa_label.place(x=1390, y=15)
+nasa_label.image = photonasa
+nasa_label.bind("<Button-1>", lambda e: open_nasa())
+nasa_label.configure(cursor="hand2")  # cursor de clique
+
+# Instagram
+img_pathinsta = os.path.join(BASE_DIR, r"Imagens_app\insta.png")
+insta = Image.open(img_pathinsta).resize((35, 35))
+photoinsta = ImageTk.PhotoImage(insta)
+insta_label = ctk.CTkLabel(down_bar, image=photoinsta, text="")
+insta_label.place(x=1419, y=15)
+insta_label.image = photoinsta
+insta_label.bind("<Button-1>", lambda e: open_insta())
+insta_label.configure(cursor="hand2")
+
+# Twitter
+img_pathtwitter = os.path.join(BASE_DIR, r"Imagens_app\twitter.png")
+twitter = Image.open(img_pathtwitter).resize((35, 30))
+phototwitter = ImageTk.PhotoImage(twitter)
+twitter_label = ctk.CTkLabel(down_bar, image=phototwitter, text="")
+twitter_label.place(x=1450, y=15)
+twitter_label.image = phototwitter
+twitter_label.bind("<Button-1>", lambda e: open_twitter())
+twitter_label.configure(cursor="hand2")
+
+# Facebook
+img_pathfacebook = os.path.join(BASE_DIR, r"Imagens_app\facebook.png")
+facebook = Image.open(img_pathfacebook).resize((35, 35))
+photofacebook = ImageTk.PhotoImage(facebook)
+facebook_label = ctk.CTkLabel(down_bar, image=photofacebook, text="")
+facebook_label.place(x=1480, y=15)
+facebook_label.image = photofacebook
+facebook_label.bind("<Button-1>", lambda e: open_facebook())
+facebook_label.configure(cursor="hand2")
+
+# LinkedIn
+img_pathlinkedin = os.path.join(BASE_DIR, r"Imagens_app\linkedin.png")
+linkedin = Image.open(img_pathlinkedin).resize((38, 38))
+photolinkedin = ImageTk.PhotoImage(linkedin)
+linkedin_label = ctk.CTkLabel(down_bar, image=photolinkedin, text="")
+linkedin_label.place(x=1505, y=14)
+linkedin_label.image = photolinkedin
+linkedin_label.bind("<Button-1>", lambda e: open_linkedin())
+linkedin_label.configure(cursor="hand2")
 
 app.mainloop()
 
