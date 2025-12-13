@@ -4,6 +4,7 @@ import subprocess
 import os
 import sys
 import webbrowser
+from tkinter import font as tkFont
 #from main import conectar_sql
 
 
@@ -19,18 +20,37 @@ app = ctk.CTk()
 app.geometry("1920x1080")
 app.title("Somos bue fixes")
 
+screen_width = 2000
+screen_height = 1000
+bg_image = Image.open(r"C:\Users\adria\Documents\GitHub\projetobd\Imagens_app\fundologs.jpg").resize((screen_width, screen_height))
+bg_photo = ImageTk.PhotoImage(bg_image)
+
+# --- CANVAS ---
+canvas = ctk.CTkCanvas(app, width=screen_width, height=screen_height, highlightthickness=0)
+canvas.place(x=0, y=0)
+canvas.create_image(0, 0, anchor="nw", image=bg_photo)
+
 # --- TOP BAR ---
-top_bar = ctk.CTkFrame(app, width=1920, height=80, fg_color="#1E5EFF")
+top_bar = ctk.CTkFrame(app, width=1920, height=80, fg_color="#0C1B33")
 top_bar.place(x=0, y=0)
 
 login_title = ctk.CTkLabel(
     top_bar,
     text="Login",
-    font=("Comic Sans MS", 50, "bold"),
+    font=("Aharoni", 50, "bold"),
     text_color="#E2DFDF",
     fg_color=None  # transparente
 )
-login_title.place(x=30, y=10)
+login_title.place(x=125, y=15)
+
+# --- LOGO ---
+img_path = os.path.join(BASE_DIR, r"Imagens_app\logo.png")
+image = Image.open(img_path).resize((100, 100))
+photo = ImageTk.PhotoImage(image)
+
+logo_label = ctk.CTkLabel(top_bar, image=photo, text="")
+logo_label.place(x=30, y=8)
+logo_label.image = photo  # manter referência
 
 # --- CAMPOS DE ENTRADA ---
 entry = ctk.CTkEntry(app, placeholder_text="Usuário", width=250, height=35)
@@ -40,15 +60,29 @@ passw = ctk.CTkEntry(app, placeholder_text="Password", show="*", width=250, heig
 passw.place(x=650, y=170)
 
 # --- OUTPUT LABEL ---
-output_label = ctk.CTkLabel(app, text="", text_color="Red", fg_color=None)
-output_label.place(x=650, y=235)
+# Supondo que você tenha um canvas chamado "canvas"
 
+# Criar fonte negrito
+bold_font = tkFont.Font(family="Arial", size=14, weight="bold")
+
+# Criar o texto no canvas
+output_text = canvas.create_text(
+    825, 300,
+    text="", 
+    fill="red",
+    font=bold_font,
+    anchor="nw"
+)
+
+# Função greet atualizada
 def greet():
     nome = entry.get()
     if nome.strip() == "":
-        output_label.configure(text="Por favor preencha os campos!")
+        canvas.itemconfig(output_text, text="Por favor preencha os campos!", fill="red")
     else:
-        output_label.configure(text=f"Olá {nome}, somos mesmo bué fixes 😎")
+        canvas.itemconfig(output_text, text=f"Olá {nome}, somos mesmo bué fixes 😎", fill="green")
+
+
 
 # --- FUNÇÕES DE NAVEGAÇÃO ---
 def open_signin():
@@ -60,22 +94,44 @@ def open_principal():
     subprocess.Popen(["python", "abaabrir.py"])
 
 # --- LABEL “Ir para o Sign In” com hover e clique ---
-font_label = ctk.CTkFont(family="Arial", size=14, underline=True)
-signin_label = ctk.CTkLabel(app, text="Ir para o Sign In", text_color="#1E5EFF", font=font_label, fg_color=None)
-signin_label.place(x=725, y=210)
+font_label = ("Arial", 14, "underline")
 
+signin_text = canvas.create_text(
+    890, 272,
+    text="Ir para o Sign In",
+    fill="#1E5EFF",
+    font=font_label,
+    anchor="nw"
+)
+
+# Hover e clique
 def on_enter(event):
-    signin_label.configure(text_color="orange", cursor="hand2")
+    canvas.itemconfig(signin_text, fill="orange")
+    canvas.config(cursor="hand2")
 
 def on_leave(event):
-    signin_label.configure(text_color="#1E5EFF", cursor="")
+    canvas.itemconfig(signin_text, fill="#1E5EFF")
+    canvas.config(cursor="")
 
-signin_label.bind("<Enter>", on_enter)
-signin_label.bind("<Leave>", on_leave)
-signin_label.bind("<Button-1>", lambda e: open_signin())
+def on_click(event):
+    open_signin()
+
+canvas.tag_bind(signin_text, "<Enter>", on_enter)
+canvas.tag_bind(signin_text, "<Leave>", on_leave)
+canvas.tag_bind(signin_text, "<Button-1>", on_click)
+
 
 # --- LOGIN BUTTON ---
-greet_btn = ctk.CTkButton(app, text="Entrar", command=greet, width=250, height=40)
+greet_btn = ctk.CTkButton(
+    app,
+    text="Entrar",
+    fg_color="#0C1B33",
+    hover_color="#14284D",
+    text_color="white",
+    width=250,
+    height=40,
+    command=greet
+)
 greet_btn.place(x=650, y=270)
 
 

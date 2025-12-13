@@ -4,6 +4,9 @@ import subprocess
 import os
 import sys
 import webbrowser
+from tkinter import font as tkFont
+from main import get_connection
+import pyodbc
 
 
 ctk.set_appearance_mode("System")
@@ -17,8 +20,8 @@ app = ctk.CTk()
 app.geometry("1920x1080")
 app.title("Somos bue fixes")
 
-screen_width = 1800
-screen_height = 900
+screen_width = 2000
+screen_height = 1000
 bg_image = Image.open(r"C:\Users\adria\Documents\GitHub\projetobd\Imagens_app\fundologs.jpg").resize((screen_width, screen_height))
 bg_photo = ImageTk.PhotoImage(bg_image)
 
@@ -28,7 +31,7 @@ canvas.place(x=0, y=0)
 canvas.create_image(0, 0, anchor="nw", image=bg_photo)
 
 # --- TOP BAR ---
-top_bar = ctk.CTkFrame(app, width=1920, height=80, fg_color="#0C1B33")
+top_bar = ctk.CTkFrame(app, width=1920, height=80, fg_color="#0C1B33") #AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 top_bar.place(x=0, y=0)
 
 # --- LOGO ---
@@ -46,7 +49,7 @@ login_title = ctk.CTkLabel(
     top_bar,
     text="Sign In",
     font=("Aharoni", 50, "bold"),
-    text_color="#E2DFDF"
+    text_color="#E2DFDF",  
 )
 login_title.place(x=150, y=15)  # deslocado para dar espaço à logo
 
@@ -67,7 +70,20 @@ passw.place(x=800, y=200)
 output_label = ctk.CTkLabel(app, text="", text_color="Red")
 output_label.place(x=650, y=235)
 
-# --- FUNÇÃO BOTÃO “ENTRAR” ---
+
+# Criar fonte negrito
+bold_font = tkFont.Font(family="Arial", size=12, weight="bold")
+
+# Criar o texto no canvas inicialmente vazio
+output_text = canvas.create_text(
+    650, 235,  # posição do texto
+    text="", 
+    fill="red",  # cor inicial
+    font=bold_font,
+    anchor="nw"
+)
+
+# Função greet atualizada
 def greet():
     nome = name.get()
     sobrenome = surname.get()
@@ -75,10 +91,34 @@ def greet():
     senha = passw.get()
 
     if not nome or not sobrenome or not usuario or not senha:
-        output_label.configure(text="Preencha todos os campos!", text_color="red")
+        canvas.itemconfig(output_text, text="Preencha todos os campos!", fill="red")
         return
 
-    output_label.configure(text="Conta criada com sucesso!", text_color="green")
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO users (name, surname, [user], passw)
+            VALUES (?, ?, ?, ?)
+            """,
+            (nome, sobrenome, usuario, senha)
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        canvas.itemconfig(output_text, text="Conta criada com sucesso!", fill="green")
+
+    except pyodbc.IntegrityError:
+        canvas.itemconfig(output_text, text="Usuário já existe!", fill="red")
+
+    except Exception as e:
+        canvas.itemconfig(output_text, text=f"Erro ao criar conta: {e}", fill="red")
+
+
 
 greet_btn = ctk.CTkButton(
     app,
@@ -105,10 +145,22 @@ def open_signin():
         output_label.configure(text=f"Erro ao abrir login: {e}", text_color="red")
 
 # --- LABEL “LOGIN” COM HOVER E CLIQUE ---
-font_label = ctk.CTkFont(family="Arial", size=14, underline=True)
-signin_label = ctk.CTkLabel(app, text="Login", text_color="#4278CE", font=font_label)
-signin_label.place(x=710, y=310)
+# --- LABEL “LOGIN” COM HOVER E CLIQUE SOBRE O CANVAS ---
+font_label = ("Arial", 14, "underline")
 
+# --- LABEL “LOGIN” COM HOVER E CLIQUE SOBRE A TOP BAR ---
+font_label = ctk.CTkFont(family="Arial", size=14, underline=True)
+
+signin_label = ctk.CTkLabel(
+    top_bar,
+    text="Login",
+    text_color="#4278CE",
+    font=font_label,
+    fg_color=None  # fundo transparente, herda o top_bar
+)
+signin_label.place(x=1450, y=25)  # ajuste a posição conforme necessário
+
+# Hover e clique
 def on_enter(event):
     signin_label.configure(text_color="orange", cursor="hand2")
 
@@ -118,6 +170,36 @@ def on_leave(event):
 signin_label.bind("<Enter>", on_enter)
 signin_label.bind("<Leave>", on_leave)
 signin_label.bind("<Button-1>", lambda e: open_signin())
+
+# --- LABEL “Página Principal” COM HOVER E CLIQUE SOBRE A TOP BAR ---
+font_label = ctk.CTkFont(family="Arial", size=14, underline=True)
+
+mainpage_label = ctk.CTkLabel(
+    top_bar,
+    text="Página Principal",
+    text_color="#4278CE",
+    font=font_label,
+    fg_color=None  # fundo transparente, herda o top_bar
+)
+mainpage_label.place(x=1325, y=25)  # ajuste a posição conforme necessário
+
+# Hover e clique
+def on_enter_main(event):
+    mainpage_label.configure(text_color="orange", cursor="hand2")
+
+def on_leave_main(event):
+    mainpage_label.configure(text_color="#4278CE", cursor="")
+
+def open_mainpage():
+    # Aqui você coloca a função que abre a página principal
+    print("Abrindo página principal...")  # substitua pelo seu código real
+
+mainpage_label.bind("<Enter>", on_enter_main)
+mainpage_label.bind("<Leave>", on_leave_main)
+mainpage_label.bind("<Button-1>", lambda e: open_mainpage())
+
+
+
 
 
 
@@ -167,7 +249,7 @@ mencao.place(x=10, y=670)
 
 # Nasa
 img_pathnasa = os.path.join(BASE_DIR, r"Imagens_app\nasa.png")
-nasa = Image.open(img_pathnasa).resize((30, 30))
+nasa = Image.open(img_pathnasa).resize((35, 35))
 photonasa = ImageTk.PhotoImage(nasa)
 nasa_label = ctk.CTkLabel(down_bar, image=photonasa, text="")
 nasa_label.place(x=1390, y=15)
@@ -177,10 +259,10 @@ nasa_label.configure(cursor="hand2")  # cursor de clique
 
 # Instagram
 img_pathinsta = os.path.join(BASE_DIR, r"Imagens_app\insta.png")
-insta = Image.open(img_pathinsta).resize((45, 35))
+insta = Image.open(img_pathinsta).resize((35, 35))
 photoinsta = ImageTk.PhotoImage(insta)
 insta_label = ctk.CTkLabel(down_bar, image=photoinsta, text="")
-insta_label.place(x=1415, y=15)
+insta_label.place(x=1419, y=15)
 insta_label.image = photoinsta
 insta_label.bind("<Button-1>", lambda e: open_insta())
 insta_label.configure(cursor="hand2")
