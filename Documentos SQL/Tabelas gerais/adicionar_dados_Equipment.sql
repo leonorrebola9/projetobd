@@ -21,7 +21,7 @@ FROM Observation_Center
 WHERE name <> 'Minor Planet Center (General)' -- Ignora o Genérico antigo
   AND name NOT IN (SELECT REPLACE(name, ' Telescope', '') FROM Equipment);
 
--- 3. Distribuição aleatória (CORRIGIDO COM CROSS APPLY E CHECKSUM)
+-- 3. Distribuição aleatória
 -- Descobrir qual é o ID do equipamento genérico criado anteriormente
 DECLARE @GenericID INT = (SELECT TOP 1 Equipment_ID FROM Equipment WHERE name = 'Generic Telescope');
 
