@@ -32,13 +32,3 @@ BEGIN
     SELECT @NewID AS Equipment_ID;
 END
 GO
-
--- Para criar um equipamento para não dar erro
-USE projeto;
-GO
-
--- 1. Primeiro cria um Centro (porque o equipamento precisa dele)
-EXEC SP_InserirObservationCenter 'Centro Padrao', 0.0, 0.0, 0.0;
-
--- 2. Agora cria o Equipamento (que vai ficar com o ID 1)
-EXEC SP_InserirEquipment 'Telescopio Generico', 'Otico', 1;

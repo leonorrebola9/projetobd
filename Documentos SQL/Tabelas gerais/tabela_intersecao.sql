@@ -48,3 +48,6 @@ INNER JOIN dbo.MPCORB AS M
     ON REPLACE(REPLACE(REPLACE(CAST(N.name AS VARCHAR(MAX)), ' ', ''), '(', ''), ')', '') 
        = 
        REPLACE(REPLACE(REPLACE(CAST(M.Nome AS VARCHAR(MAX)), ' ', ''), '(', ''), ')', '');
+
+-- Criar Primary Key
+ALTER TABLE dbo.dados ADD id INT IDENTITY PRIMARY KEY;
