@@ -73,9 +73,3 @@ SELECT TOP 3
     Equipa_Astronomos
 FROM vw_App_Completa
 WHERE Total_Sessoes > 1;
-
-
--- Substitui '%a%' por uma letra qualquer para ver resultados
-SELECT Nome, Status_Alerta, Escala_Torino
-FROM vw_App_Completa
-WHERE Nome LIKE '%Ceres%';
