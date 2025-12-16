@@ -4,7 +4,6 @@ GO
 CREATE OR ALTER VIEW vw_App_Completa AS
 SELECT 
     -- 1. IDENTIDADE
-    A.Asteroid_ID,
     A.full_name AS [Nome],
     A.diameter AS [Diametro],
     A.diameter_sigma AS [Incerteza_Diametro],
