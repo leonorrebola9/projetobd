@@ -77,11 +77,37 @@ output_text = canvas.create_text(
 )
 
 def greet():
-    nome = entry.get()
-    if nome.strip() == "":
-        canvas.itemconfig(output_text, text="Por favor preencha os campos!", fill="red")
-    else:
-        canvas.itemconfig(output_text, text=f"Olá {nome}, somos mesmo bué fixes 😎", fill="green")
+    usuario = entry.get()
+    senha = passw.get()
+
+    if not usuario or not senha:
+        canvas.itemconfig(output_text, text="Por favor preencha todos os campos!", fill="red")
+        return
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Buscar usuário e senha
+        cursor.execute(
+            "SELECT name, surname FROM users WHERE [user]=? AND passw=?",
+            (usuario, senha)
+        )
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user:
+            nome_completo = f"{user[0]} {user[1]}"
+            canvas.itemconfig(output_text, text=f"Olá {nome_completo}, login efetuado!", fill="green")
+            
+            # Abrir crud.py passando o nome do usuário
+            app.after(500, lambda: open_crud(nome_completo))
+        else:
+            canvas.itemconfig(output_text, text="Usuário ou senha incorretos!", fill="red")
+
+    except Exception as e:
+        canvas.itemconfig(output_text, text=f"Erro ao conectar ao banco: {e}", fill="red")
 
 #botão entrar
 greet_btn = ctk.CTkButton(
@@ -111,6 +137,10 @@ signin_text = canvas.create_text(
 def open_signin():
     app.destroy()
     subprocess.Popen(["python", "signin.py"])
+
+def open_crud(nome_usuario):
+    app.destroy()
+    subprocess.Popen([sys.executable, "crud.py", nome_usuario])
 
 def on_enter(event):
     canvas.itemconfig(signin_text, fill="orange")

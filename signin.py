@@ -170,6 +170,9 @@ def greet():
 
         canvas.itemconfig(output_text, text="Conta criada com sucesso!", fill="green")
 
+        # Redireciona para o login após 0,5s
+        app.after(500, lambda: open_login())
+
     except pyodbc.IntegrityError:
         canvas.itemconfig(output_text, text="Usuário já existe!", fill="red")
 
@@ -189,6 +192,10 @@ greet_btn = ctk.CTkButton(
     command=greet
 )
 greet_btn.place(x=650, y=270)
+
+def open_login():
+    app.destroy()
+    subprocess.Popen([sys.executable, "login.py"])
 
 
 #---------------------------------------------
