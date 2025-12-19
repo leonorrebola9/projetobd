@@ -55,4 +55,8 @@ GROUP BY
     AL.status, AL.Priority, AL.torino, AL.dap, AL.Description;
 GO
 
-select * from vw_App_Completa WHERE Nome = 'Conae';
+select *
+from INFORMATION_SCHEMA.VIEWS
+where TABLE_NAME = 'vw_App_Completa';
+
+select * from vw_App_Completa;
