@@ -6,3 +6,5 @@ CREATE TABLE users (
     passw VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT GETDATE() 
     );
+
+    select * from users;

@@ -4,27 +4,25 @@ GO
 CREATE OR ALTER VIEW vw_App_Completa AS
 SELECT 
     -- 1. IDENTIDADE
-    A.Asteroid_ID,
     A.full_name AS [Nome],
-    A.diameter AS [Diametro_km],
+    A.diameter AS [Diametro],
     A.diameter_sigma AS [Incerteza_Diametro],
-    A.H AS [Magnitude_H],
+    A.H AS [Magnitude],
     A.albedo AS [Albedo],
-    A.pha AS [Perigoso],
+    A.pha AS [PHA],
     A.neo AS [NEO],
     A.epoch_cal,
 
     -- 2. ORBITAL
-    OP.Orbital_ID,
     OP.moid_ld AS [Distancia_Minima_Terra],
     OP.rms AS [RMS],
     OP.e AS [Excentricidade],
-    OP.a AS [Eixo_SemiMaior],
-    OP.q AS [Perihelio],
+    OP.a AS [Eixo_Semimaior],
+    OP.q AS [Perielio],
     OP.i AS [Inclinacao],
     OP.M AS [Anomalia_Media],
     OP.tp_cal,
-    OP.epoch AS [Epoch_Orbital],
+    OP.epoch AS [Epoch],
 
     -- 3. ALERTA
     ISNULL(AL.status, 'Sem Alerta') AS [Status_Alerta],
@@ -38,10 +36,13 @@ SELECT
     SUM(O.num_obs) AS [Total_Imagens],
     MAX(O.arc) AS [Maior_Arco_Dias],
 
-    -- 5. LISTAS (Sem DISTINCT para funcionar na tua versão)
+    -- 5. LISTAS
     STRING_AGG(ISNULL(E.name, ''), '; ') AS [Lista_Equipamentos],
     STRING_AGG(ISNULL(S.Computer, ''), '; ') AS [Lista_Softwares],
-    STRING_AGG(ISNULL(AST.name, ''), '; ') AS [Equipa_Astronomos]
+    
+    -- LIGAÇÃO CORRIGIDA (Usa a nova lógica se tiveres criado a coluna Astronomer_ID na Observation)
+    STRING_AGG(ISNULL(AST.name, ''), '; ') AS [Equipa_Astronomos],
+    STRING_AGG(ISNULL(C.name, ''), '; ')   AS [Centros_Observacao]
 
 FROM Asteroid A
 INNER JOIN Orbital_Parameter OP ON A.Asteroid_ID = OP.Asteroid_ID
@@ -49,7 +50,7 @@ LEFT JOIN Alert AL ON A.Asteroid_ID = AL.Asteroid_ID
 LEFT JOIN Observation O ON A.Asteroid_ID = O.Asteroid_ID
 LEFT JOIN Equipment E ON O.Equipment_ID = E.Equipment_ID
 LEFT JOIN Software S ON O.Software_ID = S.Software_ID
-LEFT JOIN Astronomer AST ON O.Observation_ID = AST.Observation_ID
+LEFT JOIN Astronomer AST ON O.Astronomer_ID = AST.Astronomer_ID
 LEFT JOIN Observation_Center C ON AST.Center_ID = C.Center_ID
 
 GROUP BY 
@@ -58,18 +59,5 @@ GROUP BY
     AL.status, AL.Priority, AL.torino, AL.dap, AL.Description;
 GO
 
-USE projeto;
-GO
 
-SELECT TOP 5 Asteroid_ID, Nome, Diametro_km, Total_Sessoes 
-FROM vw_App_Completa;
-
-
--- Este teste procura asteroides vistos muitas vezes para ver se a coluna de equipamentos tem texto junto
-SELECT TOP 3 
-    Nome, 
-    Total_Sessoes, 
-    Lista_Equipamentos, 
-    Equipa_Astronomos
-FROM vw_App_Completa
-WHERE Total_Sessoes > 1;
+select * from vw_App_Completa;
