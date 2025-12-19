@@ -1,147 +1,191 @@
 import customtkinter as ctk
-from main import get_connection
-import sys
-import pyodbc
 from tkinter import messagebox
-
-ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("blue")
+from main import get_connection, img_path, open_insta, open_nasa, open_twitter, open_facebook, open_linkedin
+from PIL import Image
+import sys
+import subprocess
+import os
 
 # =========================
-# Receber nome de usuário do login
+# RECEBER UTILIZADOR
 # =========================
 if len(sys.argv) > 1:
-    nome_usuario = sys.argv[1]  # Ex: "usuario1"
+    nome_usuario = sys.argv[1]
 else:
     messagebox.showerror("Erro", "Usuário não informado")
     sys.exit()
 
 # =========================
-# Janela
+# CONFIGURAÇÕES
 # =========================
+ctk.set_appearance_mode("Dark")
 app = ctk.CTk()
-app.geometry("600x400")
-app.title("Editar Usuário")
+app.geometry("1600x800")
+app.title("Asteroides – Editar Usuário")
 
 # =========================
-# Função para carregar dados do usuário
+# BACKGROUND
 # =========================
-def carregar_dados():
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT name, surname, [user], passw FROM users WHERE [user]=?",
-            (nome_usuario,)
-        )
-        dados = cursor.fetchone()
-        cursor.close()
-        conn.close()
+bg_img = Image.open(img_path("fundologs.jpg")).resize((1600, 800))
+bg_photo = ctk.CTkImage(bg_img, size=(1600, 800))
 
-        if dados:
-            entry_name.delete(0, ctk.END)
-            entry_name.insert(0, dados[0])
+bg_label = ctk.CTkLabel(app, image=bg_photo, text="")
+bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-            entry_surname.delete(0, ctk.END)
-            entry_surname.insert(0, dados[1])
+# =========================
+# TOP BAR
+# =========================
+top_bar = ctk.CTkFrame(app, height=80, fg_color="#0C1B33", corner_radius=0)
+top_bar.place(x=0, y=0, relwidth=1)
 
-            entry_user.delete(0, ctk.END)
-            entry_user.insert(0, dados[2])
+logo_img = Image.open(img_path("logo.png")).resize((60, 60))
+logo = ctk.CTkImage(logo_img, size=(60, 60))
+ctk.CTkLabel(top_bar, image=logo, text="").place(x=30, y=10)
 
-            entry_pass.delete(0, ctk.END)
-            entry_pass.insert(0, dados[3])
-        else:
-            messagebox.showerror("Erro", "Usuário não encontrado")
-            app.destroy()
-    except Exception as e:
-        messagebox.showerror("Erro", f"Falha ao carregar dados: {e}")
+ctk.CTkLabel(
+    top_bar,
+    text="Editar Usuário",
+    font=("Aharoni", 40, "bold"),
+    text_color="#E2DFDF",
+    fg_color="transparent"
+).place(x=125, y=15)
+
+def voltar():
+    app.destroy()
+    voltar_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crud.py")
+    subprocess.Popen([sys.executable, voltar_path])
+
+ctk.CTkButton(
+    top_bar,
+    text="← Voltar",
+    width=100,
+    height=40,
+    fg_color="#34495E",
+    hover_color="#2C3E50",
+    font=("Arial", 14, "bold"),
+    command=voltar
+).place(x=1400, y=20)
+
+# =========================
+# CAMPOS
+# =========================
+fields = {}
+
+def campo(label, key, x, y, show=None):
+    frame = ctk.CTkFrame(app, fg_color="transparent")
+    frame.place(x=x, y=y)
+
+    ctk.CTkLabel(
+        frame,
+        text=label,
+        font=("Arial", 12, "bold"),
+        text_color="white",
+        fg_color="transparent",
+        width=120,
+        anchor="w"
+    ).pack(side="left", padx=(0, 10))
+
+    entry = ctk.CTkEntry(
+        frame,
+        width=300,
+        height=28,
+        fg_color="#1E1E1E",
+        text_color="white",
+        border_color="#444444",
+        show=show
+    )
+    entry.pack(side="left")
+    fields[key] = entry
+
+x = 550
+y = 220
+gap = 50
+
+campo("Nome", "name", x, y)
+campo("Sobrenome", "surname", x, y + gap)
+campo("Usuário", "user", x, y + gap*2)
+campo("Senha", "passw", x, y + gap*3, show="*")
+
+# =========================
+# CARREGAR DADOS
+# =========================
+def carregar():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name, surname, [user], passw FROM users WHERE [user]=?", (nome_usuario,))
+    d = cur.fetchone()
+    conn.close()
+
+    if not d:
+        messagebox.showerror("Erro", "Usuário não encontrado")
         app.destroy()
+        return
+
+    fields["name"].insert(0, d[0])
+    fields["surname"].insert(0, d[1])
+    fields["user"].insert(0, d[2])
+    fields["passw"].insert(0, d[3])
 
 # =========================
-# Função para verificar duplicidade de usuário
+# ATUALIZAR
 # =========================
-def usuario_existe(usuario_novo):
-    """
-    Retorna True se já existir outro usuário com o mesmo nome.
-    """
-    if usuario_novo == nome_usuario:
-        return False  # O usuário não mudou, então não há duplicidade
+def atualizar():
+    n, s, u, p = (fields[k].get() for k in fields)
+
+    if not all([n, s, u, p]):
+        messagebox.showwarning("Aviso", "Preencha todos os campos")
+        return
 
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT COUNT(*) FROM users WHERE [user] = ?",
-        (usuario_novo,)
-    )
-    count = cursor.fetchone()[0]
-    cursor.close()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE users
+        SET name=?, surname=?, [user]=?, passw=?
+        WHERE [user]=?
+    """, (n, s, u, p, nome_usuario))
+    conn.commit()
     conn.close()
-    return count > 0
 
+    messagebox.showinfo("Sucesso", "Dados atualizados")
+    app.destroy()
 
-# =========================
-# Função atualizar dados
-# =========================
-def atualizar_dados():
-    novo_name = entry_name.get()
-    novo_surname = entry_surname.get()
-    novo_user = entry_user.get()
-    nova_senha = entry_pass.get()
-
-    if not novo_name or not novo_surname or not novo_user or not nova_senha:
-        messagebox.showwarning("Aviso", "Preencha todos os campos!")
-        return
-
-    if usuario_existe(novo_user):
-        messagebox.showerror("Erro", "Já existe outro usuário com esse nome!")
-        return
-
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            UPDATE users
-            SET name=?, surname=?, [user]=?, passw=?
-            WHERE [user]=?
-            """,
-            (novo_name, novo_surname, novo_user, nova_senha, nome_usuario)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        messagebox.showinfo("Sucesso", "Dados atualizados com sucesso!")
-        app.destroy()
-    except Exception as e:
-        messagebox.showerror("Erro", f"Falha ao atualizar dados: {e}")
+ctk.CTkButton(
+    app,
+    text="Guardar Alterações",
+    command=atualizar,
+    fg_color="#27AE60",
+    hover_color="#1E8449",
+    width=280,
+    height=45,
+    font=("Arial", 16, "bold")
+).place(x=660, y=y + gap*4 + 20)
 
 # =========================
-# Campos de entrada
+# DOWN BAR
 # =========================
-ctk.CTkLabel(app, text="Nome:").place(x=50, y=50)
-entry_name = ctk.CTkEntry(app, width=300)
-entry_name.place(x=150, y=50)
+down = ctk.CTkFrame(app, height=60, fg_color="#B4AEAE", corner_radius=0)
+down.place(x=0, y=740, relwidth=1)
 
-ctk.CTkLabel(app, text="Sobrenome:").place(x=50, y=100)
-entry_surname = ctk.CTkEntry(app, width=300)
-entry_surname.place(x=150, y=100)
+ctk.CTkLabel(
+    down,
+    text="@Adriana Abreu & Leonor Rebola",
+    text_color="black",
+    font=("Aharoni", 14, "bold"),
+    fg_color="transparent"
+).place(x=20, y=15)
 
-ctk.CTkLabel(app, text="Usuário:").place(x=50, y=150)
-entry_user = ctk.CTkEntry(app, width=300)
-entry_user.place(x=150, y=150)
+def social(img, x, cmd):
+    im = Image.open(img_path(img)).resize((30, 30))
+    ph = ctk.CTkImage(im, size=(30, 30))
+    lbl = ctk.CTkLabel(down, image=ph, text="", fg_color="transparent")
+    lbl.place(x=x, y=15)
+    lbl.bind("<Button-1>", lambda e: cmd())
 
-ctk.CTkLabel(app, text="Senha:").place(x=50, y=200)
-entry_pass = ctk.CTkEntry(app, width=300, show="*")
-entry_pass.place(x=150, y=200)
+social("nasa.png", 1350, open_nasa)
+social("insta.png", 1400, open_insta)
+social("twitter.png", 1450, open_twitter)
+social("facebook.png", 1500, open_facebook)
+social("linkedin.png", 1550, open_linkedin)
 
-# =========================
-# Botão atualizar
-# =========================
-btn_atualizar = ctk.CTkButton(app, text="Salvar Alterações", command=atualizar_dados)
-btn_atualizar.place(x=200, y=300)
-
-# Carregar dados ao iniciar
-carregar_dados()
-
+carregar()
 app.mainloop()
