@@ -2,8 +2,7 @@
 USE projeto;
 GO
 
--- Esta versão usa uma técnica que obriga o SQL a recalcular para cada linha
--- usando o ID do astrónomo como "semente" para o aleatório
+-- Usa o ID do astrónomo para os dados aleatórios
 UPDATE Astronomer
 SET Center_ID = (
     SELECT TOP 1 Center_ID 
