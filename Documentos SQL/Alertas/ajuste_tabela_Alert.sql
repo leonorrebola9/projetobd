@@ -1,6 +1,3 @@
-USE projeto;
-GO
-
 -- 1. Limpa alertas antigos (se houver) para recalcular tudo de forma limpa
 TRUNCATE TABLE Alert;
 

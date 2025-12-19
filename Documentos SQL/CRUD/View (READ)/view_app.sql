@@ -2,43 +2,43 @@ CREATE OR ALTER VIEW vw_App_Completa AS
 SELECT 
     -- Asteroide
     A.Asteroid_ID,
-    A.full_name AS [Nome],
-    A.diameter AS [Diametro],
-    A.diameter_sigma AS [Incerteza],
+    A.full_name AS [full_name],
+    A.diameter AS [diameter],
+    A.diameter_sigma AS [diameter_sigma],
     A.H AS [H],
-    A.albedo AS [Albedo],
-    A.pha AS [PHA],
-    A.neo AS [NEO],
-    A.epoch_cal,
+    A.albedo AS [albedo],
+    A.pha AS [pha],
+    A.neo AS [neo],
+    A.epoch_cal AS [epoch_cal],
 
     -- Parâmetro orbital
-    ISNULL(OP.moid_ld, 0) AS [Distancia_Minima_Terra],
-    ISNULL(OP.rms, 0) AS [RMS],
-    ISNULL(OP.e, 0) AS [Excentricidade],
-    ISNULL(OP.a, 0) AS [Eixo_Semimaior],
-    ISNULL(OP.q, 0) AS [Perielio],
-    ISNULL(OP.i, 0) AS [Inclinacao],
-    ISNULL(OP.M, 0) AS [Anomalia_Media],
-    OP.tp_cal,
-    OP.epoch AS [Epoch_Orbital],
+    ISNULL(OP.moid_ld, 0) AS [moid_ld],
+    ISNULL(OP.rms, 0) AS [rms],
+    ISNULL(OP.e, 0) AS [e],
+    ISNULL(OP.a, 0) AS [a],
+    ISNULL(OP.q, 0) AS [q],
+    ISNULL(OP.i, 0) AS [i],
+    ISNULL(OP.M, 0) AS [M],
+    OP.tp_cal AS [tp_cal],
+    OP.epoch AS [epoch],
 
     -- Alertas
-    ISNULL(AL.status, 'Sem Alerta') AS [Status_Alerta],
-    ISNULL(AL.Priority, 'Nenhuma') AS [Prioridade_Alerta],
-    ISNULL(AL.torino, 0) AS [Escala_Torino],
-    AL.dap AS [Data_Aproximacao],
-    AL.Description AS [Descricao_Risco],
+    ISNULL(AL.status, 'Sem Alerta') AS [status],
+    ISNULL(AL.Priority, 'Nenhuma') AS [Priority],
+    ISNULL(AL.torino, 0) AS [torino],
+    AL.dap AS [dap],
+    AL.Description AS [Description],
 
     -- Estatísticas
-    COUNT(O.Observation_ID) AS [Total_Sessoes],
-    SUM(O.num_obs) AS [Total_Imagens],
-    MAX(O.arc) AS [Maior_Arco_Dias],
+    COUNT(O.Observation_ID) AS [Observation_ID],
+    SUM(O.num_obs) AS [num_obs],
+    MAX(O.arc) AS [arc],
 
     -- Listas
-    STRING_AGG(ISNULL(E.name, ''), '; ') AS [Lista_Equipamentos],
-    STRING_AGG(ISNULL(S.Computer, ''), '; ') AS [Lista_Softwares],
-    STRING_AGG(ISNULL(AST.name, ''), '; ') AS [Equipa_Astronomos],
-    STRING_AGG(ISNULL(C.name, ''), '; ')   AS [Centros_Observacao]
+    STRING_AGG(ISNULL(E.name, ''), '; ') AS [namee],
+    STRING_AGG(ISNULL(S.Computer, ''), '; ') AS [Computer],
+    STRING_AGG(ISNULL(AST.name, ''), '; ') AS [name],
+    STRING_AGG(ISNULL(C.name, ''), '; ')   AS [namec]
 
 FROM Asteroid A
 LEFT JOIN Orbital_Parameter OP ON A.Asteroid_ID = OP.Asteroid_ID
