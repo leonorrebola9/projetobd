@@ -3,7 +3,6 @@ from tkinter import messagebox
 from main import get_connection, img_path, open_insta, open_nasa, open_twitter, open_facebook, open_linkedin
 from PIL import Image, ImageTk
 import sys
-import subprocess
 
 # =========================
 # CONFIGURAÇÕES E ESTADO
@@ -15,66 +14,54 @@ else:
     nome_completo = "Usuário"
     usuario = ""
 
-ctk.set_appearance_mode("Dark")
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
+
 app = ctk.CTk()
 app.geometry("1600x800")
-app.title("Asteroides – vw_App_Completa")
+app.title("Asteroides – Criar")
 
 # =========================
-# BACKGROUND (SUBSTITUINDO CANVAS POR LABEL)
+# BACKGROUND
 # =========================
-# Usar CTkLabel para o fundo permite transparência real nos widgets sobrepostos
-bg_img = Image.open(img_path("fundologs.jpg")).resize((1600, 800))
-bg_photo = ctk.CTkImage(light_image=bg_img, dark_image=bg_img, size=(1600, 800))
+bg_image = Image.open(img_path("fundologs.jpg")).resize((2000, 1000))
+bg_photo = ImageTk.PhotoImage(bg_image)
 
-bg_label = ctk.CTkLabel(app, image=bg_photo, text="")
-bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+canvas = ctk.CTkCanvas(app, width=2000, height=1000, highlightthickness=0)
+canvas.place(x=0, y=0)
+canvas.create_image(0, 0, anchor="nw", image=bg_photo)
 
 # =========================
 # TOP BAR
 # =========================
-top_bar = ctk.CTkFrame(app, height=80, fg_color="#0C1B33", corner_radius=0)
+top_bar = ctk.CTkFrame(app, height=80, fg_color="#0C1B33")
 top_bar.place(x=0, y=0, relwidth=1)
 
-logo_img = Image.open(img_path("logo.png")).resize((60, 60))
-logo = ctk.CTkImage(logo_img, size=(60, 60))
-ctk.CTkLabel(top_bar, image=logo, text="").place(x=30, y=10)
+logo = ImageTk.PhotoImage(Image.open(img_path("logo.png")).resize((100, 100)))
+ctk.CTkLabel(top_bar, image=logo, text="").place(x=30, y=8)
 
 ctk.CTkLabel(
     top_bar,
-    text="Criar Asteroide",
-    font=("Aharoni", 40, "bold"),
-    text_color="#E2DFDF",
-    fg_color="transparent"
+    text="Criar",
+    font=("Aharoni", 50, "bold"),
+    text_color="#E2DFDF"
 ).place(x=125, y=15)
 
-def voltar():
-    app.destroy()  # fecha a janela atual
-    subprocess.Popen([sys.executable, "crud.py"])  # abre o crud.py no mesmo interpretador Python
-
-voltar_btn = ctk.CTkButton(
-    top_bar,
-    text="← Voltar",
-    width=100,
-    height=40,
-    fg_color="#34495E",
-    hover_color="#2C3E50",
-    font=("Arial", 14, "bold"),
-    command=voltar
-)
-voltar_btn.place(x=1400, y=20)
-
 # =========================
-# FUNÇÃO DE CRIAÇÃO (COM TRANSPARÊNCIA REAL)
+# FUNÇÃO DE CRIAÇÃO (ALINHADA)
+# =========================
+# =========================
+# FUNÇÃO DE CRIAÇÃO (ALINHAMENTO GARANTIDO)
 # =========================
 fields = {}
 
-def criar_label_entry(texto, x_pos, y_pos):
-    # O container DEVE ter fg_color="transparent"
+def criar_label_entry(texto, x_pos, y_pos, width_entry=180):
+    # Criamos um frame invisível para agrupar label e entry
     container = ctk.CTkFrame(app, fg_color="transparent")
     container.place(x=x_pos, y=y_pos)
 
-    # Agora a label será 100% transparente sobre a imagem
+    # A Label agora é um widget normal, mas com fg_color="transparent"
+    # O CustomTkinter lida melhor com a transparência dentro de frames
     label = ctk.CTkLabel(
         container, 
         text=texto, 
@@ -88,7 +75,7 @@ def criar_label_entry(texto, x_pos, y_pos):
 
     entry = ctk.CTkEntry(
         container, 
-        width=180, 
+        width=width_entry, 
         height=28, 
         fg_color="#1E1E1E", 
         text_color="white", 
@@ -98,34 +85,63 @@ def criar_label_entry(texto, x_pos, y_pos):
     
     return entry
 
-# Posicionamento
-spacing_y = 42  
-y_inicial = 130 
-col1_x = 200
-col2_x = 750
+# =========================
+# POSICIONAMENTO DOS CAMPOS
+# =========================
+spacing_y = 40  
+y_inicial = 120 
+col1_x = 150  # Posição X da primeira coluna (Label + Entry)
+col2_x = 650  # Posição X da segunda coluna (Label + Entry)
 
 y = y_inicial
 
-# Listagem de campos organizada
-itens = [
-    ("Nome", "Diametro_Inc", "Diâmetro Inc. (km)"),
-    ("Diametro", "Magnitude", "Magnitude (H)"),
-    ("Albedo", "PHA", "PHA (Y/N)"),
-    ("NEO", "Epoch", "Epoch"),
-    ("e", "a", "a (AU)"),
-    ("q", "i", "i (°)"),
-    ("M", "tp", "tp"),
-    ("MOID", "RMS", "RMS"),
-    ("Descricao", "Sessoes", "Sessões"),
-    ("Imagens", "Arco_Max", "Arco Máx."),
-    ("Equipamentos", "Softwares", "Softwares"),
-    ("Astronomos", "Centros", "Centros")
-]
+# Coluna 1 e Coluna 2 alinhadas lado a lado
+fields['Nome'] = criar_label_entry("Nome", col1_x, y)
+fields['Diametro_Inc'] = criar_label_entry("Diâmetro Inc. (km)", col2_x, y)
 
-for label1, key2, label2 in itens:
-    fields[label1 if ' ' not in label1 else label1.split()[0]] = criar_label_entry(label1, col1_x, y)
-    fields[key2] = criar_label_entry(label2, col2_x, y)
-    y += spacing_y
+y += spacing_y
+fields['Diametro'] = criar_label_entry("Diâmetro (km)", col1_x, y)
+fields['Magnitude'] = criar_label_entry("Magnitude (H)", col2_x, y)
+
+y += spacing_y
+fields['Albedo'] = criar_label_entry("Albedo", col1_x, y)
+fields['PHA'] = criar_label_entry("PHA (Y/N)", col2_x, y)
+
+y += spacing_y
+fields['NEO'] = criar_label_entry("NEO (Y/N)", col1_x, y)
+fields['Epoch'] = criar_label_entry("Epoch", col2_x, y)
+
+y += spacing_y
+fields['e'] = criar_label_entry("e", col1_x, y)
+fields['a'] = criar_label_entry("a (AU)", col2_x, y)
+
+y += spacing_y
+fields['q'] = criar_label_entry("q (AU)", col1_x, y)
+fields['i'] = criar_label_entry("i (°)", col2_x, y)
+
+y += spacing_y
+fields['M'] = criar_label_entry("M (°)", col1_x, y)
+fields['tp'] = criar_label_entry("tp", col2_x, y)
+
+y += spacing_y
+fields['MOID'] = criar_label_entry("MOID (LD)", col1_x, y)
+fields['RMS'] = criar_label_entry("RMS", col2_x, y)
+
+y += spacing_y
+fields['Descricao'] = criar_label_entry("Descrição", col1_x, y)
+fields['Sessoes'] = criar_label_entry("Sessões", col2_x, y)
+
+y += spacing_y
+fields['Imagens'] = criar_label_entry("Imagens", col1_x, y)
+fields['Arco_Max'] = criar_label_entry("Arco Máx.", col2_x, y)
+
+y += spacing_y
+fields['Equipamentos'] = criar_label_entry("Equipamentos", col1_x, y)
+fields['Softwares'] = criar_label_entry("Softwares", col2_x, y)
+
+y += spacing_y
+fields['Astronomos'] = criar_label_entry("Astrónomos", col1_x, y)
+fields['Centros'] = criar_label_entry("Centros", col2_x, y)
 
 # =========================
 # BOTÃO GUARDAR
@@ -134,31 +150,43 @@ def criar_asteroide():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Asteroid (full_name) VALUES (?)", (fields['Nome'].get(),))
+        cursor.execute("""
+            INSERT INTO Asteroid (full_name, diameter, diameter_sigma, H, albedo, pha)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            fields['Nome'].get(),
+            fields['Diametro'].get() or None,
+            fields['Diametro_Inc'].get() or None,
+            fields['Magnitude'].get() or None,
+            fields['Albedo'].get() or None,
+            fields['PHA'].get() or None
+        ))
         conn.commit()
         conn.close()
-        messagebox.showinfo("Sucesso", "Salvo!")
+        messagebox.showinfo("Sucesso", "Asteroide criado com sucesso!")
+        app.destroy()
     except Exception as e:
         messagebox.showerror("Erro", str(e))
 
 guardar_btn = ctk.CTkButton(app, text="Guardar Asteroide", command=criar_asteroide, 
                              fg_color="#27AE60", hover_color="#1E8449", width=250, height=45, font=("Arial", 16, "bold"))
-guardar_btn.place(x=550, y=y + 20)
+guardar_btn.place(x=600, y=y + 60)
 
 # =========================
 # DOWN BAR
 # =========================
-down_bar = ctk.CTkFrame(app, height=60, fg_color="#B4AEAE", corner_radius=0)
-down_bar.place(x=0, y=740, relwidth=1)
+down_bar = ctk.CTkFrame(app, width=2000, height=60, fg_color="#B4AEAE", corner_radius=0)
+down_bar.place(x=0, y=740)
 
 ctk.CTkLabel(down_bar, text="@Adriana Abreu & Leonor Rebola", text_color="black", 
               font=("Aharoni", 14, "bold"), fg_color="transparent").place(x=20, y=15)
 
 def add_social_icon(img_name, x, cmd):
-    img = Image.open(img_path(img_name)).resize((30, 30))
-    ph = ctk.CTkImage(img, size=(30, 30))
+    img = Image.open(img_path(img_name)).resize((35, 35))
+    ph = ImageTk.PhotoImage(img)
     lbl = ctk.CTkLabel(down_bar, image=ph, text="", fg_color="transparent")
-    lbl.place(x=x, y=15)
+    lbl.image = ph
+    lbl.place(x=x, y=12)
     lbl.bind("<Button-1>", lambda e: cmd())
     lbl.configure(cursor="hand2")
 
