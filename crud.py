@@ -66,8 +66,8 @@ user_icon_image = ImageTk.PhotoImage(Image.open(img_path("iconeusuario.png")).re
 def open_configurations():
     app.destroy()
     conf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user.py")
-    subprocess.Popen([sys.executable, conf_path])
-    
+    subprocess.Popen([sys.executable, conf_path, usuario])
+
 def logout():
     app.destroy()  # fecha a aplicação
 
