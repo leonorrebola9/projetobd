@@ -23,6 +23,11 @@ def img_path(nome):
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(BASE_DIR, "Imagens_app", nome)
 
+def doc_path(nome):
+    """Retorna o caminho completo do documento dado o nome do arquivo."""
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(BASE_DIR, "Documentos_app", nome)
+
 
 def open_nasa():
     webbrowser.open("https://www.nasa.gov/")

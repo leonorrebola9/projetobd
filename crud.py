@@ -290,6 +290,17 @@ def apagar_asteroide():
     atualizar_lista()
     messagebox.showinfo("Sucesso", "Asteroide eliminado com sucesso.")
 
+def alterar_asteroide():
+    asteroid_id = get_asteroid_id_selecionado()
+
+    if asteroid_id is None:
+        messagebox.showwarning("Aviso", "Selecione um asteroide para alterar.")
+        return
+
+    # Abrir o script de alteração passando o ID do asteroide
+    subprocess.Popen([sys.executable, "alterar.py", str(asteroid_id)])
+
+
 ctk.CTkButton(frame_pag, text="Anterior", command=pagina_anterior).grid(row=0, column=0, padx=10)
 ctk.CTkButton(frame_pag, text="Próxima", command=proxima_pagina).grid(row=0, column=2, padx=10)
 
@@ -310,6 +321,16 @@ ctk.CTkButton(
     hover_color="#1E8449",
     command=lambda: abrir_criar()
 ).grid(row=0, column=0, padx=10)
+
+ctk.CTkButton(
+    frame_actions,
+    text="Alterar",
+    width=140,
+    fg_color="#F1C40F",
+    hover_color="#D4AC0D",
+    command=alterar_asteroide
+).grid(row=0, column=2, padx=10)
+
 
 ctk.CTkButton(
     frame_actions,

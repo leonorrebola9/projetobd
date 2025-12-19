@@ -5,7 +5,7 @@ import os
 import sys
 import webbrowser
 from tkinter import font as tkFont
-from main import get_connection, img_path, open_insta, open_nasa, open_twitter, open_facebook, open_linkedin
+from main import get_connection, img_path,doc_path, open_insta, open_nasa, open_twitter, open_facebook, open_linkedin
 
 
 ctk.set_appearance_mode("System")
@@ -136,16 +136,14 @@ signin_text = canvas.create_text(
 
 def open_signin():
     app.destroy()
-    subprocess.Popen(["python", "signin.py"])
+    signin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "signin.py")
+    subprocess.Popen([sys.executable, signin_path])
 
 def open_crud(nome_completo, usuario):
     app.destroy()
-    subprocess.Popen([
-        sys.executable,
-        "crud.py",
-        nome_completo,
-        usuario
-    ])
+    crud_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crud.py")
+    subprocess.Popen([sys.executable, crud_path, nome_completo, usuario])
+
 
 def on_enter(event):
     canvas.itemconfig(signin_text, fill="orange")
