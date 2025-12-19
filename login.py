@@ -102,7 +102,7 @@ def greet():
             canvas.itemconfig(output_text, text=f"Olá {nome_completo}, login efetuado!", fill="green")
             
             # Abrir crud.py passando o nome do usuário
-            app.after(500, lambda: open_crud(nome_completo))
+            app.after(500, lambda: open_crud(nome_completo,usuario))
         else:
             canvas.itemconfig(output_text, text="Usuário ou senha incorretos!", fill="red")
 
@@ -138,9 +138,14 @@ def open_signin():
     app.destroy()
     subprocess.Popen(["python", "signin.py"])
 
-def open_crud(nome_usuario):
+def open_crud(nome_completo, usuario):
     app.destroy()
-    subprocess.Popen([sys.executable, "crud.py", nome_usuario])
+    subprocess.Popen([
+        sys.executable,
+        "crud.py",
+        nome_completo,
+        usuario
+    ])
 
 def on_enter(event):
     canvas.itemconfig(signin_text, fill="orange")

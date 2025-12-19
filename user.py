@@ -7,7 +7,9 @@ from tkinter import messagebox
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
+# =========================
 # Receber nome de usuário do login
+# =========================
 if len(sys.argv) > 1:
     nome_usuario = sys.argv[1]  # Ex: "usuario1"
 else:
@@ -56,23 +58,26 @@ def carregar_dados():
         app.destroy()
 
 # =========================
-# Campos de entrada
+# Função para verificar duplicidade de usuário
 # =========================
-ctk.CTkLabel(app, text="Nome:").place(x=50, y=50)
-entry_name = ctk.CTkEntry(app, width=300)
-entry_name.place(x=150, y=50)
+def usuario_existe(usuario_novo):
+    """
+    Retorna True se já existir outro usuário com o mesmo nome.
+    """
+    if usuario_novo == nome_usuario:
+        return False  # O usuário não mudou, então não há duplicidade
 
-ctk.CTkLabel(app, text="Sobrenome:").place(x=50, y=100)
-entry_surname = ctk.CTkEntry(app, width=300)
-entry_surname.place(x=150, y=100)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT COUNT(*) FROM users WHERE [user] = ?",
+        (usuario_novo,)
+    )
+    count = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return count > 0
 
-ctk.CTkLabel(app, text="Usuário:").place(x=50, y=150)
-entry_user = ctk.CTkEntry(app, width=300)
-entry_user.place(x=150, y=150)
-
-ctk.CTkLabel(app, text="Senha:").place(x=50, y=200)
-entry_pass = ctk.CTkEntry(app, width=300, show="*")
-entry_pass.place(x=150, y=200)
 
 # =========================
 # Função atualizar dados
@@ -85,6 +90,10 @@ def atualizar_dados():
 
     if not novo_name or not novo_surname or not novo_user or not nova_senha:
         messagebox.showwarning("Aviso", "Preencha todos os campos!")
+        return
+
+    if usuario_existe(novo_user):
+        messagebox.showerror("Erro", "Já existe outro usuário com esse nome!")
         return
 
     try:
@@ -104,11 +113,27 @@ def atualizar_dados():
 
         messagebox.showinfo("Sucesso", "Dados atualizados com sucesso!")
         app.destroy()
-        # Opcional: voltar para crud.py ou login.py
-    except pyodbc.IntegrityError:
-        messagebox.showerror("Erro", "Usuário já existe com esse nome!")
     except Exception as e:
         messagebox.showerror("Erro", f"Falha ao atualizar dados: {e}")
+
+# =========================
+# Campos de entrada
+# =========================
+ctk.CTkLabel(app, text="Nome:").place(x=50, y=50)
+entry_name = ctk.CTkEntry(app, width=300)
+entry_name.place(x=150, y=50)
+
+ctk.CTkLabel(app, text="Sobrenome:").place(x=50, y=100)
+entry_surname = ctk.CTkEntry(app, width=300)
+entry_surname.place(x=150, y=100)
+
+ctk.CTkLabel(app, text="Usuário:").place(x=50, y=150)
+entry_user = ctk.CTkEntry(app, width=300)
+entry_user.place(x=150, y=150)
+
+ctk.CTkLabel(app, text="Senha:").place(x=50, y=200)
+entry_pass = ctk.CTkEntry(app, width=300, show="*")
+entry_pass.place(x=150, y=200)
 
 # =========================
 # Botão atualizar
