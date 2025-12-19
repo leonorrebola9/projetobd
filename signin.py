@@ -1,3 +1,4 @@
+import os
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import subprocess
@@ -68,9 +69,10 @@ login_label = ctk.CTkLabel(
 )
 login_label.place(x=1450, y=25)  
 
-def open_signin():
-    app.destroy() 
-    subprocess.Popen([sys.executable, "login.py"])
+def open_login():
+    app.destroy()
+    login_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "login.py")
+    subprocess.Popen([sys.executable, login_path])
 
 # Hover e clique
 def on_enter(event):
@@ -81,7 +83,7 @@ def on_leave(event):
 
 login_label.bind("<Enter>", on_enter)
 login_label.bind("<Leave>", on_leave)
-login_label.bind("<Button-1>", lambda e: open_signin())
+login_label.bind("<Button-1>", lambda e: open_login())
 
 #pagina principal
 
@@ -95,8 +97,9 @@ mainpage_label = ctk.CTkLabel(
 mainpage_label.place(x=1300, y=25)  # ajuste a posição conforme necessário
 
 def open_mainpage():
-    app.destroy()  # fecha a janela atual
-    subprocess.Popen([sys.executable, "abaabrir.py"])
+    app.destroy()
+    main_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "abaabrir.py")
+    subprocess.Popen([sys.executable, main_path])
 
 
 def on_enter_main(event):
@@ -193,9 +196,6 @@ greet_btn = ctk.CTkButton(
 )
 greet_btn.place(x=650, y=270)
 
-def open_login():
-    app.destroy()
-    subprocess.Popen([sys.executable, "login.py"])
 
 
 #---------------------------------------------

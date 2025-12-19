@@ -1,6 +1,9 @@
+import sys
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import subprocess  # ← import necessário
+import os
+from main import img_path
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -12,7 +15,7 @@ app.title("Somos bue fixes")
 # --- CARREGAR E REDIMENSIONAR IMAGEM ---
 screen_width = 1920
 screen_height = 1080
-bg_image = Image.open(r"C:\Users\adria\Documents\GitHub\projetobd\Imagens_app\fundo01.jpg").resize((screen_width, screen_height))
+bg_image = Image.open(img_path("fundo01.jpg")).resize((screen_width, screen_height))
 bg_photo = ImageTk.PhotoImage(bg_image)
 
 # --- CANVAS ---
@@ -25,11 +28,11 @@ text_y = screen_height // 2 - 50
 canvas.create_text(screen_width // 2, text_y, text="Bem Vindo", font=("Comic Sans MS", 50, "bold"), fill="white")
 
 # --- FUNÇÃO DO BOTÃO ---
-def abrir_login():
-    # Abre o login.py em um novo processo
-    subprocess.Popen(["python", "login.py"])
-    # Fecha a janela atual se quiser
+def open_login():
     app.destroy()
+    login_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "login.py")
+    subprocess.Popen([sys.executable, login_path])
+
 
 # --- BOTÃO COM ANIMAÇÃO DE CRESCIMENTO ---
 final_width = 200
@@ -45,7 +48,7 @@ entrar_btn = ctk.CTkButton(
     fg_color="#1E5EFF",
     hover_color="#1C4DE8",
     font=("Comic Sans MS", 1, "bold"),
-    command=abrir_login  # ← ligação para login.py
+    command=open_login  # ← ligação para login.py
 )
 entrar_btn.place(x=screen_width//2, y=text_y + 80, anchor="n")
 

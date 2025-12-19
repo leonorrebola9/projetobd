@@ -5,6 +5,7 @@ import tkinter as tk
 from main import get_connection, img_path
 import sys
 import subprocess
+import os
 
 
 
@@ -62,9 +63,11 @@ ctk.CTkLabel(
 # =========================
 user_icon_image = ImageTk.PhotoImage(Image.open(img_path("iconeusuario.png")).resize((50, 50)))
 
-def abrir_configuracoes():
-    subprocess.Popen([sys.executable, "user.py", usuario]) 
-
+def open_configurations():
+    app.destroy()
+    conf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user.py")
+    subprocess.Popen([sys.executable, conf_path])
+    
 def logout():
     app.destroy()  # fecha a aplicação
 
@@ -72,7 +75,7 @@ def logout():
 menu_usuario = tk.Menu(app, tearoff=0)
 menu_usuario.add_command(label=nome_completo, state="disabled")  # só exibe o nome
 menu_usuario.add_separator()
-menu_usuario.add_command(label="Configurações", command=abrir_configuracoes)
+menu_usuario.add_command(label="Configurações", command=open_configurations)
 menu_usuario.add_command(label="Logout", command=logout)
 
 # Botão com ícone que dispara o menu
@@ -319,7 +322,7 @@ ctk.CTkButton(
     width=140,
     fg_color="#27AE60",
     hover_color="#1E8449",
-    command=lambda: abrir_criar()
+    command=lambda: open_criar()
 ).grid(row=0, column=0, padx=10)
 
 ctk.CTkButton(
@@ -341,8 +344,10 @@ ctk.CTkButton(
     command=apagar_asteroide
 ).grid(row=0, column=1, padx=10)
 
-def abrir_criar():
-    subprocess.Popen([sys.executable, "criar.py"])
+def open_criar():
+    app.destroy()
+    criar_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "criar.py")
+    subprocess.Popen([sys.executable, criar_path])
 
 
 # =========================
