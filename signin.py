@@ -16,7 +16,7 @@ ctk.set_default_color_theme("blue")
 #Tamanho da janela
 app = ctk.CTk()
 app.geometry("1920x1080")
-app.title("Somos bue fixes")
+app.title("Sign In")
 
 #Imagem de fundo
 screen_width = 2000

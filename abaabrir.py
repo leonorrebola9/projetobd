@@ -10,7 +10,7 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.geometry("1920x1080")
-app.title("Somos bue fixes")
+app.title("Bem Vindo")
 
 # --- CARREGAR E REDIMENSIONAR IMAGEM ---
 screen_width = 1920
