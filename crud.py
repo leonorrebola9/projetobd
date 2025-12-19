@@ -300,8 +300,11 @@ def alterar_asteroide():
         messagebox.showwarning("Aviso", "Selecione um asteroide para alterar.")
         return
 
+    # Caminho absoluto para o script alterar.py
+    alterar_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "alterar.py")
+    
     # Abrir o script de alteração passando o ID do asteroide
-    subprocess.Popen([sys.executable, "alterar.py", str(asteroid_id)])
+    subprocess.Popen([sys.executable, alterar_path, str(asteroid_id)])
 
 
 ctk.CTkButton(frame_pag, text="Anterior", command=pagina_anterior).grid(row=0, column=0, padx=10)
