@@ -1,26 +1,22 @@
-USE projeto;
-GO
-
--- 1. APAGAR ASTEROIDE
--- Apagar um asteroide implica apagar TUDO o que se sabe sobre ele.
+-- Apagar Asteroide
 CREATE OR ALTER PROCEDURE SP_ApagarAsteroid
     @Asteroid_ID INT
 AS
 BEGIN
-    -- 1. Apagar filhos diretos
+
     DELETE FROM Alert WHERE Asteroid_ID = @Asteroid_ID;
     DELETE FROM Orbital_Parameter WHERE Asteroid_ID = @Asteroid_ID;
     
-    -- 2. Apagar Observações (são muitas!)
+    -- Apagar Observação
     DELETE FROM Observation WHERE Asteroid_ID = @Asteroid_ID;
 
-    -- 3. Finalmente, apagar o pai
     DELETE FROM Asteroid WHERE Asteroid_ID = @Asteroid_ID;
 
 END
 GO
 
--- 2. APAGAR OBSERVAÇÃO (Simples)
+
+-- Apagar Observação
 CREATE OR ALTER PROCEDURE SP_ApagarObservacao
     @Observation_ID INT
 AS
@@ -29,14 +25,11 @@ BEGIN
 END
 GO
 
--- 3. APAGAR ASTRÓNOMO (Com Proteção de Histórico)
+-- Apagar Astrónomo
 CREATE OR ALTER PROCEDURE SP_ApagarAstronomo
     @Astronomer_ID INT
 AS
 BEGIN
-    -- Se este astrónomo fez observações, não queremos perder o registo delas.
-    -- Vamos definir o autor dessas observações como NULL (ou podias pôr um ID "Desconhecido")
-    
     IF EXISTS (SELECT 1 FROM Observation WHERE Astronomer_ID = @Astronomer_ID)
     BEGIN
         UPDATE Observation 
@@ -49,12 +42,12 @@ BEGIN
 END
 GO
 
--- 4. APAGAR EQUIPAMENTO (Proteção de Logística)
+
+-- Apagar Equipamento
 CREATE OR ALTER PROCEDURE SP_ApagarEquipamento
     @Equipment_ID INT
 AS
 BEGIN
-    -- Se o equipamento foi usado, movemos as observações para o ID 1 (Genérico)
     IF EXISTS (SELECT 1 FROM Observation WHERE Equipment_ID = @Equipment_ID)
     BEGIN
         UPDATE Observation 
@@ -67,7 +60,8 @@ BEGIN
 END
 GO
 
--- 5. APAGAR SOFTWARE (Proteção de Dados)
+
+-- Apagar Software
 CREATE OR ALTER PROCEDURE SP_ApagarSoftware
     @Software_ID INT
 AS
@@ -85,7 +79,8 @@ BEGIN
 END
 GO
 
--- 6. APAGAR CENTRO (Proteção Dupla: Equipamentos e Pessoas)
+
+-- Apagar Centro de Observação
 CREATE OR ALTER PROCEDURE SP_ApagarCentro
     @Center_ID INT
 AS
@@ -102,7 +97,8 @@ BEGIN
 END
 GO
 
--- 7. APAGAR ALERTA
+
+-- Apagar Alerta
 CREATE OR ALTER PROCEDURE SP_ApagarAlerta
     @Alert_ID INT
 AS
@@ -111,7 +107,8 @@ BEGIN
 END
 GO
 
--- 8. APAGAR ÓRBITA
+
+-- Apagar Órbita
 CREATE OR ALTER PROCEDURE SP_ApagarOrbita
     @Orbital_ID INT
 AS

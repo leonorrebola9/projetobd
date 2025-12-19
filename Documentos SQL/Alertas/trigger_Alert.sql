@@ -18,7 +18,7 @@ BEGIN
     )
     SELECT 
         i.Asteroid_ID,
-        NULL, -- Se tiveres coluna Orbital_ID na tabela Orbital_Parameter, troca 'NULL' por 'i.Orbital_ID'
+        NULL,
         
         -- Estimativa simples da data (Hoje + Dias do MOID)
         DATEADD(day, i.moid_ld, GETDATE()), 

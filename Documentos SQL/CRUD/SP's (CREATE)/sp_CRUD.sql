@@ -1,9 +1,4 @@
-USE projeto;
-GO
-
--- =============================================
--- 1. ASTEROID
--- =============================================
+-- Asteroid
 CREATE OR ALTER PROCEDURE SP_InserirAsteroid
     @full_name VARCHAR(100), 
     @neo CHAR(1), 
@@ -36,9 +31,7 @@ BEGIN
 END
 GO
 
--- =============================================
--- 2. ORBITAL PARAMETER
--- =============================================
+-- Parâmetro Orbital
 CREATE OR ALTER PROCEDURE SP_InserirOrbitalParameter
     @Asteroid_ID INT, @epoch FLOAT, @e FLOAT, @sigma_e FLOAT = NULL, @a FLOAT, @sigma_a FLOAT = NULL, 
     @q FLOAT, @sigma_q FLOAT = NULL, @i FLOAT, @sigma_i FLOAT = NULL, @M FLOAT, @sigma_ma FLOAT = NULL, 
@@ -63,9 +56,7 @@ BEGIN
 END
 GO
 
--- =============================================
--- 3. ALERT
--- =============================================
+-- Alerta
 CREATE OR ALTER PROCEDURE SP_InserirAlert
     @Priority VARCHAR(50), @torino INT, @status VARCHAR(50), @dap DATETIME, @Asteroid_ID INT, @Orbital_ID INT, 
     @p FLOAT = NULL, @Description VARCHAR(255) = NULL, @Alert_Date DATETIME = NULL
@@ -94,9 +85,7 @@ BEGIN
 END
 GO
 
--- =============================================
--- 4. SOFTWARE (Separado e Limpo)
--- =============================================
+-- Software
 CREATE OR ALTER PROCEDURE SP_InserirSoftware 
     @Computer VARCHAR(100) 
 AS 
@@ -116,9 +105,7 @@ BEGIN
 END 
 GO
 
--- =============================================
--- 4.1 CENTER (Separado e Limpo)
--- =============================================
+-- Centro de Observação
 CREATE OR ALTER PROCEDURE SP_InserirObservationCenter 
     @name VARCHAR(100), 
     @latitude FLOAT, 
@@ -145,9 +132,7 @@ BEGIN
 END 
 GO
 
--- =============================================
--- 4.2 EQUIPMENT (Separado e Limpo)
--- =============================================
+-- Equipamentos
 CREATE OR ALTER PROCEDURE SP_InserirEquipment 
     @name VARCHAR(100), 
     @type VARCHAR(50), 
@@ -173,9 +158,7 @@ BEGIN
 END 
 GO
 
--- =============================================
--- 5. ASTRONOMER (Correto: sem Obs_ID)
--- =============================================
+-- Astrónomo
 CREATE OR ALTER PROCEDURE SP_InserirAstronomer
     @name VARCHAR(100),
     @Center_ID INT
@@ -199,16 +182,14 @@ BEGIN
 END
 GO
 
--- =============================================
--- 6. OBSERVATION (Correto: com Astro_ID)
--- =============================================
+-- Observação
 CREATE OR ALTER PROCEDURE SP_InserirObservation
     @arc FLOAT, 
     @num_obs INT, 
     @Asteroid_ID INT, 
     @Equipment_ID INT, 
     @Software_ID INT,
-    @Astronomer_ID INT -- Novo campo obrigatório
+    @Astronomer_ID INT
 AS
 BEGIN
     SET NOCOUNT ON;

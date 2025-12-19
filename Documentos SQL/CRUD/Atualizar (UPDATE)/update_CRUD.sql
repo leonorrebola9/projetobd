@@ -1,7 +1,4 @@
-USE projeto;
-GO
-
--- 1. ATUALIZAR ASTEROIDE (Dados Principais)
+-- Atualizar asteroide
 CREATE OR ALTER PROCEDURE SP_AtualizarDadosAsteroid
     @Asteroid_ID INT,
     @NovoDiametro FLOAT,
@@ -17,7 +14,7 @@ BEGIN
 END
 GO
 
--- 2. ATUALIZAR ÓRBITA (Dados Físicos)
+-- Atualizar órbita
 CREATE OR ALTER PROCEDURE SP_AtualizarOrbita
     @Orbital_ID INT,
     @moid_ld FLOAT,
@@ -43,7 +40,7 @@ BEGIN
 END
 GO
 
--- 3. ATUALIZAR ALERTA (Risco)
+-- Atualizar Alerta
 CREATE OR ALTER PROCEDURE SP_AtualizarAlerta
     @Alert_ID INT,
     @NovoStatus VARCHAR(50),      -- 'Green', 'Red', etc
@@ -66,7 +63,7 @@ BEGIN
 END
 GO
 
--- 4. ATUALIZAR OBSERVAÇÃO (Logística)
+-- Atualizar Observação
 CREATE OR ALTER PROCEDURE SP_AtualizarObservacao
     @Observation_ID INT,
     @NovoNumObs INT,
@@ -86,7 +83,7 @@ BEGIN
 END
 GO
 
--- 5. ATUALIZAR ASTRÓNOMO (Pessoas)
+-- Atualizar Astrónomo
 CREATE OR ALTER PROCEDURE SP_AtualizarAstronomo
     @Astronomer_ID INT,
     @NovoNome VARCHAR(100),
@@ -102,7 +99,7 @@ BEGIN
 END
 GO
 
--- 6. ATUALIZAR EQUIPAMENTO (Telescópios)
+-- Atualizar Equipamento
 CREATE OR ALTER PROCEDURE SP_AtualizarEquipamento
     @Equipment_ID INT,
     @NovoNome VARCHAR(100),
@@ -120,7 +117,7 @@ BEGIN
 END
 GO
 
--- 7. ATUALIZAR SOFTWARE (Ferramentas)
+-- Atualizar Software
 CREATE OR ALTER PROCEDURE SP_AtualizarSoftware
     @Software_ID INT,
     @NovoNomePC VARCHAR(100)
@@ -133,7 +130,7 @@ BEGIN
 END
 GO
 
--- 8. ATUALIZAR CENTRO (Locais)
+-- Atualizar Centro de Observação
 CREATE OR ALTER PROCEDURE SP_AtualizarCentro
     @Center_ID INT,
     @NovoNome VARCHAR(100),

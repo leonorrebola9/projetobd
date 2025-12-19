@@ -1,51 +1,47 @@
-USE projeto;
-GO
-
 CREATE OR ALTER VIEW vw_App_Completa AS
 SELECT 
-    -- 1. IDENTIDADE
+    -- Asteroide
+    A.Asteroid_ID,
     A.full_name AS [Nome],
     A.diameter AS [Diametro],
-    A.diameter_sigma AS [Incerteza_Diametro],
-    A.H AS [Magnitude],
+    A.diameter_sigma AS [Incerteza],
+    A.H AS [H],
     A.albedo AS [Albedo],
     A.pha AS [PHA],
     A.neo AS [NEO],
     A.epoch_cal,
 
-    -- 2. ORBITAL
-    OP.moid_ld AS [Distancia_Minima_Terra],
-    OP.rms AS [RMS],
-    OP.e AS [Excentricidade],
-    OP.a AS [Eixo_Semimaior],
-    OP.q AS [Perielio],
-    OP.i AS [Inclinacao],
-    OP.M AS [Anomalia_Media],
+    -- Parâmetro orbital
+    ISNULL(OP.moid_ld, 0) AS [Distancia_Minima_Terra],
+    ISNULL(OP.rms, 0) AS [RMS],
+    ISNULL(OP.e, 0) AS [Excentricidade],
+    ISNULL(OP.a, 0) AS [Eixo_Semimaior],
+    ISNULL(OP.q, 0) AS [Perielio],
+    ISNULL(OP.i, 0) AS [Inclinacao],
+    ISNULL(OP.M, 0) AS [Anomalia_Media],
     OP.tp_cal,
-    OP.epoch AS [Epoch],
+    OP.epoch AS [Epoch_Orbital],
 
-    -- 3. ALERTA
+    -- Alertas
     ISNULL(AL.status, 'Sem Alerta') AS [Status_Alerta],
     ISNULL(AL.Priority, 'Nenhuma') AS [Prioridade_Alerta],
-    AL.torino AS [Escala_Torino],
+    ISNULL(AL.torino, 0) AS [Escala_Torino],
     AL.dap AS [Data_Aproximacao],
     AL.Description AS [Descricao_Risco],
 
-    -- 4. ESTATÍSTICAS
+    -- Estatísticas
     COUNT(O.Observation_ID) AS [Total_Sessoes],
     SUM(O.num_obs) AS [Total_Imagens],
     MAX(O.arc) AS [Maior_Arco_Dias],
 
-    -- 5. LISTAS
+    -- Listas
     STRING_AGG(ISNULL(E.name, ''), '; ') AS [Lista_Equipamentos],
     STRING_AGG(ISNULL(S.Computer, ''), '; ') AS [Lista_Softwares],
-    
-    -- LIGAÇÃO CORRIGIDA (Usa a nova lógica se tiveres criado a coluna Astronomer_ID na Observation)
     STRING_AGG(ISNULL(AST.name, ''), '; ') AS [Equipa_Astronomos],
     STRING_AGG(ISNULL(C.name, ''), '; ')   AS [Centros_Observacao]
 
 FROM Asteroid A
-INNER JOIN Orbital_Parameter OP ON A.Asteroid_ID = OP.Asteroid_ID
+LEFT JOIN Orbital_Parameter OP ON A.Asteroid_ID = OP.Asteroid_ID
 LEFT JOIN Alert AL ON A.Asteroid_ID = AL.Asteroid_ID
 LEFT JOIN Observation O ON A.Asteroid_ID = O.Asteroid_ID
 LEFT JOIN Equipment E ON O.Equipment_ID = E.Equipment_ID
@@ -59,5 +55,4 @@ GROUP BY
     AL.status, AL.Priority, AL.torino, AL.dap, AL.Description;
 GO
 
-
-select * from vw_App_Completa;
+select * from vw_App_Completa WHERE Nome = 'Conae';
